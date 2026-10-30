@@ -91,3 +91,8 @@ export const GlobeIcon = ({ size, ...p }: IconProps) => (
     <path d="M7 1a6 6 0 1 0 0 12A6 6 0 0 0 7 1zM1 7h12M7 1c-2 2.3-2 9.7 0 12M7 1c2 2.3 2 9.7 0 12" />
   </svg>
 )
+export const CalendarIcon = ({ size, ...p }: IconProps) => (
+  <svg {...base(14, 14, size, p)}>
+    <path d="M1.5 3h11v9.5h-11zM1.5 6h11M4.5 1v3.5M9.5 1v3.5" />
+  </svg>
+)

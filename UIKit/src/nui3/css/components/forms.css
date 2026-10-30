@@ -430,3 +430,444 @@
   }
   .nui-filedrop__browse:hover { border-bottom-width: 2px; padding-bottom: 1px; }
 }
+
+/* ── Calendar / DatePicker / DateRangePicker ── */
+@layer nui3.components {
+  .nui-calendar {
+    --nui-cal-cell: 40px;
+    --nui-cal-months: 1;
+    display: inline-block;
+    max-width: 100%;
+    color: var(--nui-text);
+    font-family: var(--nui-font-sans);
+    font-size: var(--nui-fs-small);
+    line-height: var(--nui-lh-tight);
+    user-select: none;
+  }
+  .nui-calendar[data-months="2"] { --nui-cal-months: 2; }
+  [data-nui-density="compact"] .nui-calendar { --nui-cal-cell: 34px; }
+
+  .nui-calendar__months {
+    display: flex;
+    gap: var(--nui-space-6);
+    animation: nui-cal-fade var(--nui-dur-fast) var(--nui-ease-out) both;
+  }
+  .nui-calendar__month { width: calc(var(--nui-cal-cell) * 7); }
+  .nui-calendar__picker {
+    width: calc(var(--nui-cal-cell) * 7 * var(--nui-cal-months) + var(--nui-space-6) * (var(--nui-cal-months) - 1));
+    animation: nui-cal-zoom var(--nui-dur-fast) var(--nui-ease-out) both;
+  }
+
+  .nui-calendar__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--nui-space-1);
+    height: 40px;
+    margin-bottom: var(--nui-space-2);
+  }
+  .nui-calendar__nav,
+  .nui-calendar__nav-gap {
+    flex: none;
+    width: 32px;
+    height: 32px;
+  }
+  .nui-calendar__nav {
+    display: inline-grid;
+    place-items: center;
+    padding: 0;
+    border: 1px solid transparent;
+    border-radius: var(--nui-radius-control);
+    background: transparent;
+    color: var(--nui-text-muted);
+    cursor: pointer;
+    transition:
+      color var(--nui-dur-instant) var(--nui-ease),
+      border-color var(--nui-dur-instant) var(--nui-ease),
+      transform var(--nui-dur-instant) var(--nui-ease);
+  }
+  .nui-calendar__nav:hover {
+    color: var(--nui-text);
+    border-color: var(--nui-border);
+  }
+  .nui-calendar__nav:active { transform: scale(0.92); }
+  .nui-calendar__nav:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
+  .nui-calendar__nav:focus-visible { outline-offset: 0; }
+  .nui-calendar__chev { width: 10px; height: 6px; }
+  .nui-calendar__chev--prev { transform: rotate(90deg); }
+  .nui-calendar__chev--next { transform: rotate(-90deg); }
+
+  .nui-calendar__title {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--nui-space-2);
+    min-width: 0;
+    height: 32px;
+    padding: 0 var(--nui-space-2);
+    overflow: hidden;
+    border: 0;
+    border-radius: var(--nui-radius-control);
+    background: transparent;
+    color: var(--nui-text);
+    font-family: var(--nui-font-display);
+    font-size: var(--nui-fs-h4);
+    font-weight: 400;
+    line-height: 1;
+    white-space: nowrap;
+    transition: background-color var(--nui-dur-instant) var(--nui-ease);
+  }
+  button.nui-calendar__title { cursor: pointer; }
+  button.nui-calendar__title:hover { background: var(--nui-surface-sunken); }
+  .nui-calendar__title:focus-visible { outline-offset: 0; }
+  .nui-calendar__title-chev {
+    flex: none;
+    width: 8px;
+    height: 5px;
+    color: var(--nui-text-muted);
+  }
+  .nui-calendar__title-text[data-dir] { animation: nui-cal-fade var(--nui-dur) var(--nui-ease-out) both; }
+
+  /* The grid slides in from the side it came from; the clip keeps it inside its month column. */
+  .nui-calendar__clip {
+    margin: -4px;
+    padding: 4px;
+    overflow: hidden;
+  }
+  .nui-calendar__grid {
+    width: 100%;
+    border-collapse: collapse;
+    border-spacing: 0;
+    table-layout: fixed;
+  }
+  .nui-calendar__grid[data-dir="next"],
+  .nui-calendar__options[data-dir="next"] { animation: nui-cal-in-next var(--nui-dur) var(--nui-ease-out) both; }
+  .nui-calendar__grid[data-dir="prev"],
+  .nui-calendar__options[data-dir="prev"] { animation: nui-cal-in-prev var(--nui-dur) var(--nui-ease-out) both; }
+
+  .nui-calendar__weekday {
+    height: 32px;
+    padding: 0;
+    color: var(--nui-text-muted);
+    font-size: var(--nui-fs-micro);
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-align: center;
+    text-transform: uppercase;
+  }
+  .nui-calendar__cell {
+    height: var(--nui-cal-cell);
+    padding: 0;
+    text-align: center;
+  }
+  .nui-calendar__day,
+  .nui-calendar__option {
+    position: relative;
+    display: block;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    border: 1px solid transparent;
+    border-radius: var(--nui-radius-control);
+    background: transparent;
+    color: var(--nui-text);
+    font-family: var(--nui-font-sans);
+    font-size: var(--nui-fs-small);
+    font-variant-numeric: tabular-nums;
+    cursor: pointer;
+    transition:
+      background-color var(--nui-dur-instant) var(--nui-ease),
+      border-color var(--nui-dur-instant) var(--nui-ease),
+      color var(--nui-dur-instant) var(--nui-ease),
+      transform var(--nui-dur-instant) var(--nui-ease);
+  }
+  .nui-calendar__day { height: var(--nui-cal-cell); }
+  .nui-calendar__day:hover,
+  .nui-calendar__option:hover {
+    border-color: var(--nui-border-strong);
+    background-color: var(--nui-surface-sunken);
+  }
+  .nui-calendar__day:active,
+  .nui-calendar__option:active { transform: scale(0.92); }
+  .nui-calendar__day:focus-visible,
+  .nui-calendar__option:focus-visible {
+    z-index: 1;
+    outline: 2px solid var(--nui-border-focus);
+    outline-offset: 1px;
+  }
+  .nui-calendar__day[data-outside] { color: var(--nui-text-muted); }
+  .nui-calendar__day[data-today],
+  .nui-calendar__option[data-today] {
+    font-weight: 700;
+    box-shadow: inset 0 -2px 0 var(--nui-accent);
+  }
+
+  /* Range band: in-range days tint, ends fill. The preview (second end not chosen yet) is lighter. */
+  .nui-calendar__day[data-in-range] {
+    border-color: transparent;
+    background-color: color-mix(in srgb, var(--nui-accent) 22%, transparent);
+  }
+  .nui-calendar__day[data-in-range][data-preview] { background-color: color-mix(in srgb, var(--nui-accent) 12%, transparent); }
+  .nui-calendar__day[data-in-range]:hover { border-color: var(--nui-accent); }
+  .nui-calendar__day[data-selected],
+  .nui-calendar__day[data-range-start],
+  .nui-calendar__day[data-range-end],
+  .nui-calendar__option[data-selected] {
+    border-color: var(--nui-accent);
+    background-color: var(--nui-accent);
+    color: var(--nui-on-accent);
+    font-weight: 600;
+  }
+  .nui-calendar__day:is([data-selected], [data-range-start], [data-range-end])[data-today],
+  .nui-calendar__option[data-selected][data-today] { box-shadow: inset 0 -2px 0 var(--nui-on-accent); }
+  .nui-calendar__day:is([data-selected], [data-range-start], [data-range-end]):hover,
+  .nui-calendar__option[data-selected]:hover {
+    border-color: var(--nui-accent-hover);
+    background-color: var(--nui-accent-hover);
+  }
+  .nui-calendar__day[aria-disabled="true"],
+  .nui-calendar__option[aria-disabled="true"] {
+    color: var(--nui-text-decorative);
+    text-decoration: line-through;
+    cursor: not-allowed;
+  }
+  .nui-calendar__day[aria-disabled="true"]:hover,
+  .nui-calendar__option[aria-disabled="true"]:hover {
+    border-color: transparent;
+    background-color: transparent;
+  }
+  .nui-calendar__day[aria-disabled="true"]:active,
+  .nui-calendar__option[aria-disabled="true"]:active { transform: none; }
+
+  .nui-calendar__options {
+    display: grid;
+    grid-template-rows: repeat(4, 1fr);
+    gap: var(--nui-space-1);
+    height: calc(32px + var(--nui-cal-cell) * 6);
+  }
+  .nui-calendar__options-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--nui-space-1);
+  }
+  .nui-calendar__options-row > span {
+    display: block;
+    min-width: 0;
+  }
+
+  @keyframes nui-cal-in-next {
+    from { opacity: 0; transform: translateX(16px); }
+    to { opacity: 1; transform: none; }
+  }
+  @keyframes nui-cal-in-prev {
+    from { opacity: 0; transform: translateX(-16px); }
+    to { opacity: 1; transform: none; }
+  }
+  @keyframes nui-cal-fade {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  @keyframes nui-cal-zoom {
+    from { opacity: 0; transform: scale(0.97); }
+    to { opacity: 1; transform: none; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .nui-calendar__months,
+    .nui-calendar__picker,
+    .nui-calendar__grid,
+    .nui-calendar__options,
+    .nui-calendar__title-text { animation: none; }
+    .nui-calendar__day:active,
+    .nui-calendar__option:active,
+    .nui-calendar__nav:active { transform: none; }
+  }
+
+  /* Trigger: same footprint and states as .nui-input. */
+  .nui-datepicker {
+    display: flex;
+    align-items: stretch;
+    width: 100%;
+    min-width: 0;
+    min-height: var(--nui-control-h);
+    border: 1px solid var(--nui-border);
+    border-radius: var(--nui-radius-control);
+    background: var(--nui-surface);
+    color: var(--nui-text);
+    transition:
+      border-color var(--nui-dur-fast) var(--nui-ease),
+      box-shadow var(--nui-dur-fast) var(--nui-ease);
+  }
+  .nui-datepicker:hover { border-color: var(--nui-border-strong); }
+  .nui-datepicker:focus-within,
+  .nui-datepicker[data-open] {
+    border-color: var(--nui-border-focus);
+    box-shadow: inset 0 -2px 0 var(--nui-accent);
+  }
+  .nui-datepicker[data-invalid] { border-color: var(--nui-negative); }
+  .nui-datepicker[data-disabled] {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+  .nui-datepicker__input,
+  .nui-datepicker__value {
+    flex: 1 1 auto;
+    min-width: 0;
+    margin: 0;
+    padding: 0 14px;
+    border: 0;
+    border-radius: var(--nui-radius-control);
+    background: transparent;
+    color: var(--nui-text);
+    font-family: var(--nui-font-sans);
+    font-size: 15px;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.4;
+    outline: none;
+  }
+  .nui-datepicker__input::placeholder { color: var(--nui-text-muted); opacity: 1; }
+  .nui-datepicker__input:focus-visible,
+  .nui-datepicker__value:focus-visible { outline: none; }
+  .nui-datepicker__value {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--nui-space-3);
+    text-align: left;
+    cursor: pointer;
+  }
+  .nui-datepicker__value[data-placeholder] { color: var(--nui-text-muted); }
+  .nui-datepicker__text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .nui-datepicker__icon {
+    flex: none;
+    color: var(--nui-text-muted);
+    transition: color var(--nui-dur-fast) var(--nui-ease);
+  }
+  .nui-datepicker:hover .nui-datepicker__icon,
+  .nui-datepicker[data-open] .nui-datepicker__icon { color: var(--nui-text); }
+
+  .nui-datepicker__clear,
+  .nui-datepicker__toggle {
+    display: inline-grid;
+    place-items: center;
+    flex: none;
+    width: 40px;
+    padding: 0;
+    border: 0;
+    border-radius: var(--nui-radius-control);
+    background: transparent;
+    color: var(--nui-text-muted);
+    cursor: pointer;
+    transition:
+      color var(--nui-dur-fast) var(--nui-ease),
+      background-color var(--nui-dur-fast) var(--nui-ease);
+  }
+  .nui-datepicker__clear { width: 32px; }
+  .nui-datepicker__clear > svg { width: 11px; height: 11px; }
+  .nui-datepicker__toggle { border-left: 1px solid var(--nui-border-soft); }
+  .nui-datepicker__clear:hover,
+  .nui-datepicker__toggle:hover,
+  .nui-datepicker__toggle[aria-expanded="true"] { color: var(--nui-text); }
+  .nui-datepicker__toggle:hover { background-color: var(--nui-surface-sunken); }
+  .nui-datepicker__clear:focus-visible,
+  .nui-datepicker__toggle:focus-visible { outline-offset: -2px; }
+  .nui-datepicker--range .nui-datepicker__clear {
+    width: 40px;
+    border-left: 1px solid var(--nui-border-soft);
+  }
+
+  /* No 360px cap: the panel is measured at full height so flip() can move it above the trigger;
+     size() then caps it to the space on the chosen side (scrolls only when neither side fits). */
+  .nui-datepicker__panel {
+    width: max-content;
+    max-width: calc(100vw - 16px);
+    padding: var(--nui-space-4);
+  }
+  .nui-floating.nui-datepicker__panel { max-height: var(--nui-floating-max-h, none); }
+  .nui-datepicker__time,
+  .nui-datepicker__foot {
+    display: flex;
+    align-items: center;
+    gap: var(--nui-space-3);
+    margin-top: var(--nui-space-3);
+    padding-top: var(--nui-space-3);
+    border-top: 1px solid var(--nui-border-soft);
+  }
+  .nui-datepicker__foot { justify-content: space-between; }
+  .nui-datepicker__time-label {
+    color: var(--nui-text-muted);
+    font-size: var(--nui-fs-label);
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+  .nui-datepicker__time-input {
+    width: auto;
+    min-height: 40px;
+    margin-left: auto;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Range panel: presets column + months. Presets wrap into a row on narrow screens. */
+  .nui-daterange {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--nui-space-4);
+  }
+  .nui-daterange__presets {
+    display: flex;
+    flex-direction: column;
+    align-self: stretch;
+    gap: var(--nui-space-1);
+    min-width: 136px;
+    padding-right: var(--nui-space-4);
+    border-right: 1px solid var(--nui-border-soft);
+  }
+  .nui-daterange__preset {
+    padding: var(--nui-space-2) var(--nui-space-3);
+    border: 0;
+    border-radius: var(--nui-radius-control);
+    background: transparent;
+    color: var(--nui-text-secondary);
+    font-family: var(--nui-font-sans);
+    font-size: var(--nui-fs-small);
+    text-align: left;
+    white-space: nowrap;
+    cursor: pointer;
+    transition:
+      color var(--nui-dur-instant) var(--nui-ease),
+      background-color var(--nui-dur-instant) var(--nui-ease),
+      box-shadow var(--nui-dur-fast) var(--nui-ease);
+  }
+  .nui-daterange__preset:hover {
+    background-color: var(--nui-surface-sunken);
+    color: var(--nui-text);
+  }
+  .nui-daterange__preset[aria-pressed="true"] {
+    color: var(--nui-text);
+    font-weight: 600;
+    box-shadow: inset 2px 0 0 var(--nui-accent);
+  }
+  .nui-daterange__preset:focus-visible { outline-offset: -2px; }
+  @media (max-width: 719px) {
+    .nui-daterange { flex-direction: column; }
+    .nui-daterange__presets {
+      flex-direction: row;
+      flex-wrap: wrap;
+      min-width: 0;
+      padding: 0 0 var(--nui-space-3);
+      border-right: 0;
+      border-bottom: 1px solid var(--nui-border-soft);
+    }
+    .nui-daterange__preset { padding: var(--nui-space-1) var(--nui-space-2); }
+    .nui-daterange__preset[aria-pressed="true"] { box-shadow: inset 0 -2px 0 var(--nui-accent); }
+  }
+}

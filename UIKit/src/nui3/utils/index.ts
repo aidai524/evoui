@@ -1,6 +1,7 @@
 export * from './address'
 export * from './amount'
 export * from './cx'
+export * from './date'
 export * from './memo'
 export * from './misc'
 export * from './payments'

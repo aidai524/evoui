@@ -22,7 +22,7 @@ export const GROUPS: { id: GroupId; title: string; count: number }[] = [
   { id: 'theme', title: 'Theme', count: 1 },
   { id: 'foundation', title: 'Foundation', count: 9 },
   { id: 'actions', title: 'Actions', count: 6 },
-  { id: 'forms', title: 'Forms', count: 10 },
+  { id: 'forms', title: 'Forms', count: 13 },
   { id: 'navigation', title: 'Navigation', count: 6 },
   { id: 'surfaces', title: 'Surfaces', count: 13 },
   { id: 'overlays', title: 'Overlays', count: 4 },
@@ -37,7 +37,7 @@ export const GROUPS: { id: GroupId; title: string; count: number }[] = [
   { id: 'i18n', title: 'i18n', count: 1 },
 ]
 
-/** One entry per component in spec/04 (99 total). */
+/** One entry per component in spec/04 (102 total). */
 export interface ComponentDoc {
   /** Exact component name from spec/04, e.g. "TokenAmountInput", "CopyButton / useCopy". */
   name: string
