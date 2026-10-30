@@ -68,24 +68,33 @@ function DialogDemo() {
 }
 
 function DrawerDemo() {
-  const [side, setSide] = useState<'right' | 'left' | null>(null)
+  // `side` outlives `open` so the sheet leaves through the edge it came from.
+  const [open, setOpen] = useState(false)
+  const [side, setSide] = useState<'right' | 'left' | 'bottom'>('right')
+  const show = (s: typeof side) => {
+    setSide(s)
+    setOpen(true)
+  }
   return (
     <>
       <Cluster gap={5}>
-        <Button variant="outline" onClick={() => setSide('right')}>
+        <Button variant="outline" onClick={() => show('right')}>
           Order details
         </Button>
-        <Button variant="subtle" onClick={() => setSide('left')}>
+        <Button variant="subtle" onClick={() => show('left')}>
           Open left
+        </Button>
+        <Button variant="subtle" onClick={() => show('bottom')}>
+          Bottom sheet
         </Button>
       </Cluster>
       <Drawer
-        open={side !== null}
-        side={side ?? 'right'}
-        onClose={() => setSide(null)}
+        open={open}
+        side={side}
+        onClose={() => setOpen(false)}
         title="Order details"
         footer={
-          <Button variant="outline" size="sm" onClick={() => setSide(null)}>
+          <Button variant="outline" size="sm" onClick={() => setOpen(false)}>
             Done
           </Button>
         }
@@ -132,6 +141,16 @@ function ToastButtons() {
         }
       >
         Sticky with action
+      </Button>
+      <Button
+        variant="outline"
+        onClick={() =>
+          ['Block 2,841,207 scanned', 'Note decrypted', 'Balance updated'].forEach((title, i) =>
+            setTimeout(() => setLast(toast({ title, duration: 3000 + i * 900 })), i * 160),
+          )
+        }
+      >
+        Stack of three
       </Button>
       <Button variant="subtle" disabled={!last} onClick={() => last && dismiss(last)}>
         Dismiss last
@@ -183,14 +202,15 @@ export const docs: ComponentDoc[] = [
     name: 'Drawer',
     group: 'overlays',
     className: 'nui-drawer',
-    description: 'Full-height side sheet on native <dialog> (right by default, data-side="left" flips it); slides in 24px. Used for mobile nav, order details, faucet claims.',
+    description:
+      'Sheet on native <dialog>: full-height on the right (default) or left, or a full-width bottom sheet for mobile actions. Pushed in the full distance from its edge and pushed back out on close; children stay mounted until the exit ends. Used for mobile nav, order details, faucet claims.',
     Demo: DrawerDemo,
     usage: `<Drawer open={open} onClose={() => setOpen(false)} title="Order details" side="right">…</Drawer>`,
     props: [
       ['open', 'boolean'],
       ['onClose', '() => void'],
       ['title', 'ReactNode'],
-      ['side', "'right' | 'left' = 'right'"],
+      ['side', "'right' | 'left' | 'bottom' = 'right'"],
       ['footer', 'ReactNode'],
       ['dismissible', 'boolean = true'],
     ],

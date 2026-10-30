@@ -297,7 +297,7 @@ const f = useFieldControl({ id, invalid })
     name: 'Checkbox',
     group: 'forms',
     className: 'nui-check',
-    description: 'Native 16×16 checkbox with accent-color and a 14px label; the label wraps the input so the whole line is clickable.',
+    description: 'Native 16×16 checkbox (appearance:none, accent fill) whose tick draws in on check; indeterminate shows a dash. The label wraps the input so the whole line is clickable.',
     Demo: CheckboxDemo,
     usage: `<Checkbox label="I understand the risks" checked={ok} onChange={(e) => setOk(e.target.checked)} />`,
     props: [

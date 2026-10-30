@@ -59,15 +59,23 @@ export function Checkbox({ label, invalid, className, children, id, disabled, 'a
   const f = useFieldControl({ id, invalid, 'aria-describedby': db, 'aria-invalid': ai })
   return (
     <label className={cx('nui-check', className)} data-disabled={(disabled ?? f.disabled) || undefined}>
-      <input
-        ref={ref}
-        type="checkbox"
-        id={f.id}
-        aria-describedby={f['aria-describedby']}
-        aria-invalid={f['aria-invalid']}
-        disabled={disabled ?? f.disabled}
-        {...rest}
-      />
+      {/* Native input (keyboard, forms, indeterminate) restyled as the box; the SVG tick draws in on :checked. */}
+      <span className="nui-check__control">
+        <input
+          ref={ref}
+          type="checkbox"
+          id={f.id}
+          className="nui-check__input"
+          aria-describedby={f['aria-describedby']}
+          aria-invalid={f['aria-invalid']}
+          disabled={disabled ?? f.disabled}
+          {...rest}
+        />
+        <svg className="nui-check__mark" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+          <path className="nui-check__tick" d="M3.5 8.5 6.5 11.5 12.5 4.5" pathLength={1} />
+          <path className="nui-check__dash" d="M4 8h8" pathLength={1} />
+        </svg>
+      </span>
       <span>{label ?? children}</span>
     </label>
   )

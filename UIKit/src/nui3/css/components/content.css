@@ -168,9 +168,20 @@
     line-height: var(--nui-lh-tight);
     font-variant-numeric: tabular-nums;
     cursor: pointer;
-    transition: border-color var(--nui-dur-fast) var(--nui-ease), color var(--nui-dur-fast) var(--nui-ease);
+    outline: 2px solid transparent;
+    outline-offset: 6px;
+    transition:
+      border-color var(--nui-dur-fast) var(--nui-ease),
+      color var(--nui-dur-fast) var(--nui-ease),
+      outline-color var(--nui-dur-fast) var(--nui-ease-out),
+      outline-offset var(--nui-dur-fast) var(--nui-ease-out),
+      transform var(--nui-dur-instant) var(--nui-ease-out);
   }
   .nui-pagination__btn:hover { border-color: var(--nui-border-strong); }
+  .nui-pagination__btn:active { transform: translateY(1px); }
+  @media (forced-colors: active) {
+    .nui-pagination__btn:not(:focus-visible) { outline-style: none; }
+  }
   .nui-pagination__btn:disabled { opacity: 0.4; cursor: not-allowed; pointer-events: none; }
   .nui-pagination__num[aria-current="page"] { border-color: var(--nui-text); font-weight: 700; }
   .nui-pagination__prev > svg { transform: rotate(90deg); }
@@ -233,8 +244,24 @@
   .nui-infotip:hover { color: var(--nui-text); border-color: var(--nui-text-muted); }
 
   /* ── Disclosure ── */
-  .nui-disclosure { border-bottom: 1px solid var(--nui-border); }
+  .nui-disclosure {
+    border-bottom: 1px solid var(--nui-border);
+    interpolate-size: allow-keywords;
+  }
+  /* Height expand / collapse where ::details-content + interpolate-size exist (Chromium 131+); elsewhere it
+     opens instantly and the body still fades in below. content-visibility flips discretely at the end of
+     the close so the content stays painted while it collapses. */
+  .nui-disclosure::details-content {
+    block-size: 0;
+    overflow-y: clip;
+    transition:
+      block-size var(--nui-dur) var(--nui-ease-out),
+      content-visibility var(--nui-dur) allow-discrete;
+  }
+  .nui-disclosure[open]::details-content { block-size: auto; }
+  .nui-disclosure[open] > .nui-disclosure__body { animation: nui-panel-in var(--nui-dur) var(--nui-ease-out); }
   .nui-disclosure__summary {
+    position: relative;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -250,18 +277,31 @@
   }
   .nui-disclosure__summary::-webkit-details-marker { display: none; }
   .nui-disclosure__summary::marker { content: ""; }
-  .nui-disclosure__summary::after {
-    content: "+";
-    flex: none;
-    width: 22px;
-    color: var(--nui-text-muted);
-    font-size: 22px;
-    font-weight: 300;
-    line-height: 1;
-    text-align: center;
+  /* +/− drawn as two 13px bars in a 22px box: the vertical bar (::before) turns flat onto the horizontal one when open. */
+  .nui-disclosure__summary::after,
+  .nui-disclosure__summary::before {
+    content: "";
+    width: 13px;
+    height: 1.5px;
+    background: var(--nui-text-muted);
+    transition:
+      transform var(--nui-dur) var(--nui-ease-out),
+      background-color var(--nui-dur-fast) var(--nui-ease);
   }
-  .nui-disclosure[open] > .nui-disclosure__summary::after { content: "−"; }
-  .nui-disclosure__summary:hover::after { color: var(--nui-text); }
+  .nui-disclosure__summary::after {
+    flex: none;
+    margin-inline: 4.5px;
+  }
+  .nui-disclosure__summary::before {
+    position: absolute;
+    top: 50%;
+    right: 4.5px;
+    margin-top: -0.75px;
+    transform: rotate(90deg);
+  }
+  .nui-disclosure[open] > .nui-disclosure__summary::before { transform: rotate(180deg); }
+  .nui-disclosure__summary:hover::after,
+  .nui-disclosure__summary:hover::before { background-color: var(--nui-text); }
   .nui-disclosure__body {
     padding: 0 0 18px;
     color: var(--nui-text-secondary);

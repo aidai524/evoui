@@ -1,7 +1,9 @@
 import {
   useEffect,
   useId,
+  useLayoutEffect,
   useRef,
+  useState,
   type CSSProperties,
   type HTMLAttributes,
   type KeyboardEvent as ReactKeyboardEvent,
@@ -14,47 +16,114 @@ import { CloseIcon } from '../../icons'
 import { cx } from '../../utils/cx'
 import { IconButton } from '../actions'
 
+/** Longest exit animation is ~240ms; close anyway if `animationend` never arrives. */
+const EXIT_TIMEOUT = 600
+
+const reducedMotion = () => typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches
+
+/* Page scroll lock while any modal is open. The gutter is reserved only when the page actually shows a
+   classic scrollbar, so hiding overflow never shifts the layout sideways. */
+let locks = 0
+let saved: { overflow: string; gutter: string } | null = null
+function lockScroll() {
+  if (locks++ > 0) return
+  const root = document.documentElement
+  saved = { overflow: root.style.overflow, gutter: root.style.scrollbarGutter }
+  const hasScrollbar = window.innerWidth - root.clientWidth > 0
+  root.style.overflow = 'hidden'
+  if (hasScrollbar) root.style.scrollbarGutter = 'stable'
+}
+function unlockScroll() {
+  if (locks === 0 || --locks > 0 || !saved) return
+  const root = document.documentElement
+  root.style.overflow = saved.overflow
+  root.style.scrollbarGutter = saved.gutter
+  saved = null
+}
+
 /**
  * Native <dialog> + showModal(): Esc / backdrop close unless `dismissible` is false;
  * focus returns to the element that was focused when the dialog opened.
+ * Closing sets data-state="closed" and keeps the dialog (and its children) up until the exit
+ * animation ends, then calls close(); immediate under prefers-reduced-motion.
  */
 function useModal(open: boolean, onClose: () => void, dismissible: boolean) {
   const ref = useRef<HTMLDialogElement>(null)
   const returnTo = useRef<HTMLElement | null>(null)
+  const locked = useRef(false)
   const state = useRef({ open, onClose, dismissible })
   state.current = { open, onClose, dismissible }
   const backdropDown = useRef(false)
 
-  useEffect(() => {
+  // Content stays rendered from the first open until the exit animation has finished.
+  const [shown, setShown] = useState(open)
+  if (open && !shown) setShown(true)
+
+  useLayoutEffect(() => {
     const el = ref.current
-    if (!el) return
-    if (open && !el.open) {
-      returnTo.current = document.activeElement as HTMLElement | null
-      el.showModal()
-    } else if (!open && el.open) {
-      el.close()
+    if (!el || !open || el.open) return
+    returnTo.current = document.activeElement as HTMLElement | null
+    el.showModal()
+    if (!locked.current) {
+      lockScroll()
+      locked.current = true
     }
   }, [open])
 
-  // Restore focus when closing (and on unmount while open).
   useEffect(() => {
-    if (open) return
-    const target = returnTo.current
-    returnTo.current = null
-    if (target && document.contains(target)) target.focus()
+    const el = ref.current
+    if (!el || open || !el.open) return
+    let finished = false
+    const finish = () => {
+      if (finished) return
+      finished = true
+      el.close()
+      setShown(false)
+      if (locked.current) {
+        unlockScroll()
+        locked.current = false
+      }
+      const target = returnTo.current
+      returnTo.current = null
+      if (target && document.contains(target)) target.focus()
+    }
+    if (reducedMotion() || getComputedStyle(el).animationName === 'none') {
+      finish()
+      return
+    }
+    const timer = window.setTimeout(finish, EXIT_TIMEOUT)
+    // The panel's own exit animation (not the ::backdrop one) decides when to close.
+    const onEnd = (e: AnimationEvent) => {
+      if (e.target === el && !e.pseudoElement) finish()
+    }
+    el.addEventListener('animationend', onEnd)
+    return () => {
+      clearTimeout(timer)
+      el.removeEventListener('animationend', onEnd)
+    }
   }, [open])
-  useEffect(() => () => ref.current?.close(), [])
+
+  useEffect(() => {
+    const el = ref.current
+    return () => {
+      el?.close()
+      if (locked.current) {
+        unlockScroll()
+        locked.current = false
+      }
+    }
+  }, [])
 
   const handlers = {
     onCancel: (e: SyntheticEvent<HTMLDialogElement>) => {
       e.preventDefault()
-      if (state.current.dismissible) state.current.onClose()
+      if (state.current.open && state.current.dismissible) state.current.onClose()
     },
     onKeyDown: (e: ReactKeyboardEvent<HTMLDialogElement>) => {
       if (e.key !== 'Escape') return
       // Prevent the native close request so a non-dismissible dialog can't be closed by a second Esc.
       e.preventDefault()
-      if (state.current.dismissible) state.current.onClose()
+      if (state.current.open && state.current.dismissible) state.current.onClose()
     },
     onClose: () => {
       // Closed natively (e.g. <form method="dialog">) while still open in props.
@@ -67,11 +136,11 @@ function useModal(open: boolean, onClose: () => void, dismissible: boolean) {
       backdropDown.current = isBackdrop(e)
     },
     onClick: (e: ReactMouseEvent<HTMLDialogElement>) => {
-      if (backdropDown.current && isBackdrop(e) && state.current.dismissible) state.current.onClose()
+      if (backdropDown.current && isBackdrop(e) && state.current.open && state.current.dismissible) state.current.onClose()
       backdropDown.current = false
     },
   }
-  return { ref, handlers }
+  return { ref, handlers, shown, dataState: open ? 'open' : 'closed' }
 }
 
 function isBackdrop(e: ReactMouseEvent<HTMLDialogElement>) {
@@ -94,21 +163,23 @@ export interface DialogProps extends Omit<HTMLAttributes<HTMLDialogElement>, 'ti
   dismissible?: boolean
 }
 
+/** Centred modal: fades in with an 8px rise, reverses on close (children stay rendered until it ends). */
 export function Dialog({ open, onClose, title, footer, width, dismissible = true, className, style, children, ...rest }: DialogProps) {
   const { m } = useNuiLocale()
   const titleId = useId()
-  const { ref, handlers } = useModal(open, onClose, dismissible)
+  const { ref, handlers, shown, dataState } = useModal(open, onClose, dismissible)
   const w = width === undefined ? undefined : typeof width === 'number' ? `${width}px` : width
   return (
     <dialog
       ref={ref}
       className={cx('nui-dialog', className)}
+      data-state={dataState}
       aria-labelledby={titleId}
       style={{ ...(w ? { '--nui-dialog-w': w } : null), ...style } as CSSProperties}
       {...handlers}
       {...rest}
     >
-      {open && (
+      {shown && (
         <>
           <div className="nui-dialog__head">
             <h2 className="nui-dialog__title" id={titleId}>
@@ -134,19 +205,28 @@ export interface DrawerProps extends Omit<HTMLAttributes<HTMLDialogElement>, 'ti
   open: boolean
   onClose: () => void
   title: ReactNode
-  side?: 'right' | 'left'
+  /** Edge the sheet is pushed in from. `bottom` is a full-width sheet (mobile actions). */
+  side?: 'right' | 'left' | 'bottom'
   footer?: ReactNode
   dismissible?: boolean
 }
 
-/** Full-height side sheet on native <dialog>; slides in ±24px. */
+/** Side sheet on native <dialog>: pushed in the full distance from its edge, pushed back out on close. */
 export function Drawer({ open, onClose, title, side = 'right', footer, dismissible = true, className, children, ...rest }: DrawerProps) {
   const { m } = useNuiLocale()
   const titleId = useId()
-  const { ref, handlers } = useModal(open, onClose, dismissible)
+  const { ref, handlers, shown, dataState } = useModal(open, onClose, dismissible)
   return (
-    <dialog ref={ref} className={cx('nui-drawer', className)} data-side={side} aria-labelledby={titleId} {...handlers} {...rest}>
-      {open && (
+    <dialog
+      ref={ref}
+      className={cx('nui-drawer', className)}
+      data-side={side}
+      data-state={dataState}
+      aria-labelledby={titleId}
+      {...handlers}
+      {...rest}
+    >
+      {shown && (
         <>
           <div className="nui-drawer__head">
             <h2 className="nui-drawer__title" id={titleId}>

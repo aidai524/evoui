@@ -12,8 +12,18 @@
     font-size: var(--nui-fs-small);
     line-height: var(--nui-lh-ui);
   }
+  /* Motion: Modal.tsx keeps the <dialog> open with data-state="closed" until the panel's exit animation
+     ends, so enter and exit are plain keyframes on the panel and its ::backdrop (no display/overlay
+     discrete transitions needed). Exit is shorter and eases in; enter eases out. */
   .nui-dialog::backdrop,
-  .nui-drawer::backdrop { background: var(--nui-scrim); }
+  .nui-drawer::backdrop {
+    background: var(--nui-scrim);
+    animation: nui-fade-in var(--nui-dur) var(--nui-ease-out);
+  }
+  .nui-dialog[data-state="closed"]::backdrop { animation: nui-fade-out var(--nui-dur-fast) var(--nui-ease-in) forwards; }
+  .nui-drawer[data-state="closed"]::backdrop { animation: nui-fade-out calc(var(--nui-dur) * 0.8) var(--nui-ease-in) forwards; }
+  .nui-dialog[data-state="closed"],
+  .nui-drawer[data-state="closed"] { pointer-events: none; }
 
   .nui-dialog {
     width: min(100% - 32px, var(--nui-dialog-w, 480px));
@@ -23,8 +33,9 @@
   .nui-dialog[open] {
     display: flex;
     flex-direction: column;
-    animation: nui-rise var(--nui-dur) var(--nui-ease);
+    animation: nui-dialog-in var(--nui-dur) var(--nui-ease-out);
   }
+  .nui-dialog[open][data-state="closed"] { animation: nui-dialog-out var(--nui-dur-fast) var(--nui-ease-in) forwards; }
 
   .nui-dialog__head,
   .nui-drawer__head {
@@ -66,6 +77,7 @@
 
   /* ── Drawer ── */
   .nui-drawer {
+    --_from: translateX(100%);
     width: min(100% - 40px, 380px);
     max-width: none;
     height: 100%;
@@ -74,15 +86,26 @@
     border-width: 0 0 0 1px;
   }
   .nui-drawer[data-side="left"] {
+    --_from: translateX(-100%);
     margin: 0 auto 0 0;
     border-width: 0 1px 0 0;
+  }
+  /* Bottom sheet: full width, content height, capped below the top edge. */
+  .nui-drawer[data-side="bottom"] {
+    --_from: translateY(100%);
+    width: 100%;
+    height: fit-content;
+    max-height: min(100% - 48px, 85vh);
+    margin: auto 0 0;
+    border-width: 1px 0 0;
   }
   .nui-drawer[open] {
     display: flex;
     flex-direction: column;
-    animation: nui-slide-in var(--nui-dur) var(--nui-ease);
+    /* Full-distance push: ~320ms ease-out in, ~240ms ease-in out. */
+    animation: nui-sheet-in calc(var(--nui-dur) * 1.07) var(--nui-ease-out);
   }
-  .nui-drawer[data-side="left"][open] { animation-name: nui-slide-in-left; }
+  .nui-drawer[open][data-state="closed"] { animation: nui-sheet-out calc(var(--nui-dur) * 0.8) var(--nui-ease-in) forwards; }
   .nui-drawer__body {
     flex: 1 1 auto;
     min-height: 0;
@@ -98,10 +121,26 @@
     z-index: var(--nui-z-toast);
     display: flex;
     flex-direction: column;
-    gap: 10px;
     width: min(100% - 40px, 380px);
     pointer-events: none;
   }
+  /* Each toast sits in a one-row grid slot that carries the 10px stack gap as padding, so entering and
+     leaving toasts open / collapse their space (0fr ⇄ 1fr) and the rest of the stack glides instead of jumping.
+     The toaster is bottom-anchored, so only toasts above a changing slot move. */
+  .nui-toast-slot {
+    display: grid;
+    grid-template-rows: 1fr;
+    padding-top: 10px;
+    animation: nui-collapse-in var(--nui-dur-fast) var(--nui-ease-out);
+  }
+  .nui-toast-slot:first-child { padding-top: 0; }
+  /* Padding-free wrapper: lets the 0fr row reach 0 (the toast's own padding would floor it). */
+  .nui-toast-slot__inner { min-height: 0; }
+  .nui-toast-slot[data-state="closed"] {
+    pointer-events: none;
+    animation: nui-collapse-out var(--nui-dur-fast) var(--nui-ease) var(--nui-dur-instant) forwards;
+  }
+  .nui-toast-slot[data-state="closed"] .nui-toast { animation: nui-toast-out var(--nui-dur-fast) var(--nui-ease-in) forwards; }
   .nui-toast {
     display: flex;
     align-items: flex-start;
@@ -115,7 +154,7 @@
     font-size: var(--nui-fs-small);
     line-height: var(--nui-lh-ui);
     pointer-events: auto;
-    animation: nui-rise var(--nui-dur) var(--nui-ease);
+    animation: nui-toast-in var(--nui-dur) var(--nui-ease-out);
   }
   .nui-toast--positive { border-left-color: var(--nui-positive); }
   .nui-toast--negative { border-left-color: var(--nui-negative); }
