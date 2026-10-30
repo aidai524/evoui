@@ -200,7 +200,7 @@ export const docs: ComponentDoc[] = [
     group: 'overlays',
     className: 'nui-floating',
     description:
-      'Shared floating layer used by Tooltip, Select, Menu and DatePicker: rendered in a theme-aware portal on <body> (never clipped by overflow), anchored with flip/shift, animated in and out via data-state.',
+      'Shared floating layer used by Tooltip, Select, Menu and DatePicker: rendered in a theme-aware portal on <body> (never clipped by overflow) — or inside the open modal <dialog> / popover that contains the anchor, so it stays above the browser top layer — anchored with flip/shift, animated in and out via data-state.',
     Demo: PopoverDemo,
     usage: `const anchor = useRef<HTMLButtonElement>(null)
 <Button ref={anchor} onClick={() => setOpen(!open)}>Fee details</Button>

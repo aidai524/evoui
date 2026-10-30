@@ -148,7 +148,7 @@
     box-sizing: border-box;
     max-height: var(--nui-floating-max-h, 360px);
     overflow: auto;
-    border: 1px solid var(--nui-border);
+    border: 1px solid var(--nui-border-strong);
     border-radius: var(--nui-radius-base);
     background: var(--nui-surface-raised);
     color: var(--nui-text);

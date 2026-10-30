@@ -431,6 +431,274 @@
   .nui-filedrop__browse:hover { border-bottom-width: 2px; padding-bottom: 1px; }
 }
 
+/* ── Select (custom listbox; NativeSelect keeps .nui-select above) ── */
+@layer nui3.components {
+  .nui-selectbox {
+    position: relative;
+    display: block;
+    width: 100%;
+    min-width: 0;
+  }
+  .nui-selectbox__trigger {
+    display: flex;
+    align-items: center;
+    gap: var(--nui-space-3);
+    width: 100%;
+    min-width: 0;
+    min-height: var(--nui-control-h);
+    margin: 0;
+    padding: 0 14px;
+    border: 1px solid var(--nui-border);
+    border-radius: var(--nui-radius-control);
+    background: var(--nui-surface);
+    color: var(--nui-text);
+    font-family: var(--nui-font-sans);
+    font-size: 15px;
+    line-height: 1.4;
+    text-align: left;
+    cursor: pointer;
+    outline: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    transition:
+      border-color var(--nui-dur-fast) var(--nui-ease),
+      box-shadow var(--nui-dur-fast) var(--nui-ease);
+  }
+  .nui-selectbox__trigger:hover { border-color: var(--nui-border-strong); }
+  .nui-selectbox__trigger:focus,
+  .nui-selectbox__trigger:focus-visible,
+  .nui-selectbox__trigger[aria-expanded="true"] {
+    outline: none;
+    border-color: var(--nui-border-focus);
+    box-shadow: inset 0 -2px 0 var(--nui-accent);
+  }
+  .nui-selectbox__trigger[aria-invalid="true"] { border-color: var(--nui-negative); }
+  .nui-selectbox__trigger:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  .nui-selectbox__value {
+    display: flex;
+    flex: 1 1 auto;
+    align-items: center;
+    gap: var(--nui-space-2);
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+  .nui-selectbox__value[data-multiple] { gap: var(--nui-space-1); }
+  .nui-selectbox[data-clearable] .nui-selectbox__value { margin-right: var(--nui-space-6); }
+  .nui-selectbox__text {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .nui-selectbox__placeholder {
+    overflow: hidden;
+    color: var(--nui-text-muted);
+    text-overflow: ellipsis;
+  }
+  .nui-selectbox__icon {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    min-width: 16px;
+  }
+  .nui-selectbox__chip {
+    display: inline-flex;
+    flex: 0 1 auto;
+    align-items: center;
+    gap: var(--nui-space-1);
+    min-width: 0;
+    height: 24px;
+    padding: 0 var(--nui-space-2);
+    border: 1px solid var(--nui-border);
+    background: var(--nui-surface-sunken);
+    font-size: var(--nui-fs-label);
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    animation: nui-selectbox-chip var(--nui-dur-fast) var(--nui-ease-spring) both;
+  }
+  .nui-selectbox__chevron {
+    flex: none;
+    color: var(--nui-text-muted);
+    transition:
+      transform var(--nui-dur) var(--nui-ease-spring),
+      color var(--nui-dur-fast) var(--nui-ease);
+  }
+  .nui-selectbox__trigger:hover .nui-selectbox__chevron { color: var(--nui-text); }
+  .nui-selectbox__trigger[aria-expanded="true"] .nui-selectbox__chevron {
+    color: var(--nui-text);
+    transform: rotate(180deg);
+  }
+  /* Sits over the trigger, left of the chevron; the value reserves the room. */
+  .nui-selectbox__clear {
+    position: absolute;
+    top: 50%;
+    right: 36px;
+    display: grid;
+    place-items: center;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    border: 0;
+    border-radius: var(--nui-radius-control);
+    background: transparent;
+    color: var(--nui-text-muted);
+    cursor: pointer;
+    transform: translateY(-50%);
+    transition:
+      color var(--nui-dur-fast) var(--nui-ease),
+      background-color var(--nui-dur-fast) var(--nui-ease);
+  }
+  .nui-selectbox__clear:hover {
+    background: var(--nui-surface-sunken);
+    color: var(--nui-text);
+  }
+
+  /* Panel (a FloatingPanel): fixed search on top, scrolling list below. */
+  .nui-floating.nui-listbox {
+    display: flex;
+    flex-direction: column;
+    max-width: calc(100vw - var(--nui-space-4));
+    max-height: min(var(--nui-floating-max-h, 360px), var(--nui-listbox-max-h, 320px));
+    overflow: hidden;
+  }
+  .nui-listbox__search {
+    display: flex;
+    flex: none;
+    align-items: center;
+    gap: var(--nui-space-2);
+    padding: 0 var(--nui-space-3);
+    border-bottom: 1px solid var(--nui-border);
+    color: var(--nui-text-muted);
+  }
+  .nui-listbox__search-icon { flex: none; }
+  .nui-listbox__search-input {
+    flex: 1 1 auto;
+    min-width: 0;
+    height: 40px;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--nui-text);
+    font-family: var(--nui-font-sans);
+    font-size: var(--nui-fs-small);
+    outline: none;
+  }
+  .nui-listbox__search-input:focus-visible { outline: none; }
+  .nui-listbox__search-input::placeholder { color: var(--nui-text-muted); opacity: 1; }
+  .nui-listbox__list {
+    position: relative;
+    flex: 1 1 auto;
+    min-height: 0;
+    padding: var(--nui-space-1) 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    outline: none;
+  }
+  .nui-listbox__list:empty { display: none; }
+  .nui-listbox__group + .nui-listbox__group,
+  .nui-listbox__option + .nui-listbox__group {
+    margin-top: var(--nui-space-1);
+    padding-top: var(--nui-space-1);
+    border-top: 1px solid var(--nui-border-soft);
+  }
+  .nui-listbox__group-label {
+    padding: var(--nui-space-2) var(--nui-space-3) var(--nui-space-1);
+    color: var(--nui-text-muted);
+    font-size: var(--nui-fs-micro);
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+  .nui-listbox__option {
+    display: flex;
+    align-items: center;
+    gap: var(--nui-space-3);
+    min-height: 40px;
+    padding: var(--nui-space-2) var(--nui-space-3);
+    color: var(--nui-text);
+    font-size: var(--nui-fs-small);
+    line-height: 1.35;
+    cursor: pointer;
+    user-select: none;
+    transition:
+      background-color var(--nui-dur-instant) var(--nui-ease),
+      box-shadow var(--nui-dur-fast) var(--nui-ease-out);
+  }
+  .nui-listbox__option[data-active] {
+    background: var(--nui-surface-sunken);
+    box-shadow: inset 2px 0 0 var(--nui-accent);
+  }
+  .nui-listbox__option[aria-selected="true"] { font-weight: 600; }
+  .nui-listbox__option[aria-disabled="true"] {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+  .nui-listbox__icon {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    min-width: 16px;
+    color: var(--nui-text-secondary);
+  }
+  .nui-listbox__text {
+    display: grid;
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+  .nui-listbox__label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .nui-listbox__desc {
+    overflow: hidden;
+    color: var(--nui-text-muted);
+    font-size: var(--nui-fs-label);
+    font-weight: 400;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .nui-listbox__custom {
+    display: flex;
+    flex: 1 1 auto;
+    align-items: center;
+    gap: var(--nui-space-3);
+    min-width: 0;
+  }
+  .nui-listbox__check {
+    flex: none;
+    color: var(--nui-accent-text);
+    opacity: 0;
+    transform: scale(0.5);
+    transition:
+      opacity var(--nui-dur-fast) var(--nui-ease),
+      transform var(--nui-dur-fast) var(--nui-ease-spring);
+  }
+  .nui-listbox__option[aria-selected="true"] .nui-listbox__check {
+    opacity: 1;
+    transform: none;
+  }
+  .nui-listbox__empty {
+    margin: 0;
+    padding: var(--nui-space-5) var(--nui-space-3);
+    color: var(--nui-text-muted);
+    font-size: var(--nui-fs-small);
+    text-align: center;
+  }
+
+  @keyframes nui-selectbox-chip {
+    from { opacity: 0; transform: scale(0.85); }
+    to { opacity: 1; transform: none; }
+  }
+}
+
 /* ── Calendar / DatePicker / DateRangePicker ── */
 @layer nui3.components {
   .nui-calendar {
