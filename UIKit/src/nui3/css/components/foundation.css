@@ -16,6 +16,21 @@
   @keyframes nui-rise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
   @keyframes nui-slide-in { from { opacity: 0; transform: translateX(24px); } to { opacity: 1; transform: none; } }
   @keyframes nui-slide-in-left { from { opacity: 0; transform: translateX(-24px); } to { opacity: 1; transform: none; } }
+  @keyframes nui-fade-in { from { opacity: 0; } }
+  @keyframes nui-fade-out { to { opacity: 0; } }
+  /* Newly shown tab panel / disclosure body: short fade + 4px rise. */
+  @keyframes nui-panel-in { from { opacity: 0; transform: translateY(4px); } }
+  /* Dialog: fade + 8px rise + .98 scale, reversed on exit. */
+  @keyframes nui-dialog-in { from { opacity: 0; transform: translateY(8px) scale(0.98); } }
+  @keyframes nui-dialog-out { to { opacity: 0; transform: translateY(8px) scale(0.98); } }
+  /* Drawer / sheet: full-distance push from its edge; --_from is set per side. */
+  @keyframes nui-sheet-in { from { transform: var(--_from); } }
+  @keyframes nui-sheet-out { to { transform: var(--_from); } }
+  /* Toast: rise in, slide right out; the slot then collapses its height. */
+  @keyframes nui-toast-in { from { opacity: 0; transform: translateY(8px); } }
+  @keyframes nui-toast-out { to { opacity: 0; transform: translateX(24px); } }
+  @keyframes nui-collapse-in { from { grid-template-rows: 0fr; padding-top: 0; } }
+  @keyframes nui-collapse-out { to { grid-template-rows: 0fr; padding-top: 0; } }
   @keyframes nui-pulse { 50% { opacity: 0.3; } }
   @keyframes nui-shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
   @keyframes nui-indeterminate { from { transform: translateX(-100%); } to { transform: translateX(340%); } }

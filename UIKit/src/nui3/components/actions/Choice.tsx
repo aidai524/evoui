@@ -1,6 +1,6 @@
-import { createContext, useContext, useId, type HTMLAttributes, type ReactNode } from 'react'
+import { createContext, useContext, useId, useRef, type HTMLAttributes, type ReactNode } from 'react'
 import { cx } from '../../utils/cx'
-import { normalize, onRovingKeyDown, rovingIndex, type Option } from './roving'
+import { normalize, onRovingKeyDown, rovingIndex, useSlidingIndicator, type Option } from './roving'
 
 export type ChoiceOption<V extends string = string> = Option<V>
 
@@ -80,8 +80,11 @@ export function Tabs<V extends string = string>({ items, value, onChange, label,
   const tabsId = id ?? auto
   const list = items.map((it) => normalize(typeof it === 'string' ? it : { value: it.value, label: it.label, disabled: it.disabled }))
   const current = rovingIndex(list, value)
+  const listRef = useRef<HTMLDivElement>(null)
+  useSlidingIndicator(listRef, list.findIndex((it) => it.value === value), list.map((it) => it.value).join('\u0000'))
   const tablist = (
     <div
+      ref={listRef}
       role="tablist"
       aria-label={label}
       className={cx('nui-tabs', className)}
@@ -105,6 +108,7 @@ export function Tabs<V extends string = string>({ items, value, onChange, label,
           {it.label}
         </button>
       ))}
+      <span className="nui-tabs__indicator" aria-hidden="true" />
     </div>
   )
   if (children === undefined) return tablist
@@ -161,8 +165,11 @@ export interface SegmentedProps<V extends string = string> extends Omit<HTMLAttr
 export function Segmented<V extends string = string>({ options, value, onChange, label, block, disabled, className, ...rest }: SegmentedProps<V>) {
   const items = options.map(normalize).map((it) => ({ ...it, disabled: disabled || it.disabled }))
   const current = rovingIndex(items, value)
+  const groupRef = useRef<HTMLDivElement>(null)
+  useSlidingIndicator(groupRef, items.findIndex((it) => it.value === value), items.map((it) => it.value).join('\u0000'))
   return (
     <div
+      ref={groupRef}
       role="radiogroup"
       aria-label={label}
       aria-disabled={disabled || undefined}
@@ -185,6 +192,7 @@ export function Segmented<V extends string = string>({ options, value, onChange,
           {it.label}
         </button>
       ))}
+      <span className="nui-segmented__indicator" aria-hidden="true" />
     </div>
   )
 }

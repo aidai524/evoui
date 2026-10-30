@@ -24,7 +24,7 @@
     background: var(--nui-accent);
     transform: scaleX(0);
     transform-origin: left center;
-    transition: transform var(--nui-dur) var(--nui-ease);
+    transition: transform var(--nui-dur) var(--nui-ease-out);
     pointer-events: none;
   }
   .nui-card--interactive:hover,
@@ -129,7 +129,7 @@
     text-decoration: none;
     text-transform: uppercase;
   }
-  .nui-card__link > svg { transition: transform var(--nui-dur) var(--nui-ease); }
+  .nui-card__link > svg { transition: transform var(--nui-dur) var(--nui-ease-out); }
   .nui-card__link:hover > svg,
   .nui-card--interactive:hover .nui-card__link > svg { transform: translateX(5px); }
   .nui-card__link--stretched::before {
@@ -400,6 +400,7 @@
     left: 13.5px;
     width: 1px;
     background: var(--nui-border);
+    transition: background-color var(--nui-dur) var(--nui-ease);
   }
   .nui-step[data-state="complete"]:not(:last-child)::before { background: var(--nui-accent); }
   .nui-step__marker {
@@ -414,11 +415,17 @@
     font-family: var(--nui-font-mono);
     font-size: var(--nui-fs-micro);
     line-height: var(--nui-lh-tight);
-    transition: border-color var(--nui-dur-fast) var(--nui-ease), background-color var(--nui-dur-fast) var(--nui-ease);
+    /* Zero ring at rest so the active step's 3px ring grows out instead of popping. */
+    box-shadow: 0 0 0 0 transparent;
+    transition:
+      border-color var(--nui-dur-fast) var(--nui-ease),
+      background-color var(--nui-dur-fast) var(--nui-ease),
+      color var(--nui-dur-fast) var(--nui-ease),
+      box-shadow var(--nui-dur) var(--nui-ease-out);
   }
   .nui-step__marker:empty::before { content: counter(nui-step); }
   .nui-step__text { min-width: 0; padding-top: var(--nui-space-1); }
-  .nui-step__title { margin: 0; color: var(--nui-text); font-size: var(--nui-fs-small); font-weight: 600; line-height: var(--nui-lh-ui); }
+  .nui-step__title { margin: 0; color: var(--nui-text); font-size: var(--nui-fs-small); font-weight: 600; line-height: var(--nui-lh-ui); transition: color var(--nui-dur-fast) var(--nui-ease); }
   .nui-step__desc { margin: 0; color: var(--nui-text-secondary); font-size: 13px; line-height: var(--nui-lh-ui); }
   .nui-step[data-state="pending"] .nui-step__title { color: var(--nui-text-muted); }
   .nui-step[data-state="active"] .nui-step__marker {
