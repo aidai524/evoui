@@ -24,3 +24,7 @@ Run both side by side with different ports:
 ```
 
 See each variant's own README for env modes (`VITE_NOIR_NEAR`, `VITE_CURATE_API`, …) and the contract assumptions.
+
+## UIKit
+
+[`UIKit/`](UIKit/) is the NUI3 component library (99 React components, tokens, themes, docs site) implemented from the spec in `UIKit/spec/` (unpacked from `spec.zip`). See [`UIKit/README.md`](UIKit/README.md).

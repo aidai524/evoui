@@ -1,0 +1,35 @@
+/* payments: BatchPayments, BatchPaymentTable. */
+@layer nui3.components {
+  .nui-batch { display: grid; gap: var(--nui-space-3); min-width: 0; }
+  .nui-batch__summary {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--nui-space-2) 28px;
+    color: var(--nui-text-secondary);
+    font-size: var(--nui-fs-small);
+    line-height: 1.5;
+  }
+  .nui-batch__summary b { color: var(--nui-text); font-weight: 600; font-variant-numeric: tabular-nums; }
+  .nui-batch__summary [data-invalid] b,
+  .nui-batch__summary [data-invalid] { color: var(--nui-negative); }
+  .nui-batch-table { min-width: 0; }
+  .nui-batch__recipient { display: grid; gap: var(--nui-space-1); font-size: 13px; line-height: 1.4; }
+  .nui-batch__name { color: var(--nui-text); font-weight: 600; }
+  .nui-batch__recipient[data-invalid] > * { color: var(--nui-negative); }
+  .nui-batch__memo {
+    display: block;
+    max-width: 180px;
+    overflow: hidden;
+    color: var(--nui-text-muted);
+    font-family: var(--nui-font-mono);
+    font-size: var(--nui-fs-micro);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .nui-batch__issue { color: var(--nui-negative); font-size: var(--nui-fs-label); font-weight: 600; white-space: normal; }
+  .nui-batch-editor { display: grid; gap: var(--nui-space-6); min-width: 0; }
+  .nui-batch__import { display: grid; gap: var(--nui-space-3); }
+  .nui-batch__import-actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--nui-space-3); }
+  .nui-batch__import-error { color: var(--nui-negative); font-size: 13px; }
+  .nui-batch__footer { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--nui-space-3); }
+}

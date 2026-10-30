@@ -1,0 +1,141 @@
+/* overlays — see spec/04-component-reference.md §G. */
+@layer nui3.components {
+  /* ── Dialog ── */
+  .nui-dialog,
+  .nui-drawer {
+    padding: 0;
+    border: 1px solid var(--nui-border);
+    border-radius: var(--nui-radius-base);
+    background: var(--nui-surface);
+    color: var(--nui-text);
+    font-family: var(--nui-font-sans);
+    font-size: var(--nui-fs-small);
+    line-height: var(--nui-lh-ui);
+  }
+  .nui-dialog::backdrop,
+  .nui-drawer::backdrop { background: var(--nui-scrim); }
+
+  .nui-dialog {
+    width: min(100% - 32px, var(--nui-dialog-w, 480px));
+    max-width: none;
+    max-height: min(100% - 48px, 760px);
+  }
+  .nui-dialog[open] {
+    display: flex;
+    flex-direction: column;
+    animation: nui-rise var(--nui-dur) var(--nui-ease);
+  }
+
+  .nui-dialog__head,
+  .nui-drawer__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex: none;
+    gap: var(--nui-space-4);
+    padding: 18px var(--nui-card-pad);
+    border-bottom: 1px solid var(--nui-border);
+  }
+  .nui-dialog__head .nui-icon-btn,
+  .nui-drawer__head .nui-icon-btn { margin-block: -8px; margin-right: -8px; }
+  .nui-dialog__title,
+  .nui-drawer__title {
+    margin: 0;
+    color: var(--nui-text);
+    font-size: var(--nui-fs-body);
+    font-weight: 600;
+    line-height: var(--nui-lh-heading);
+  }
+  .nui-dialog__body {
+    flex: 1 1 auto;
+    min-height: 0;
+    padding: var(--nui-card-pad);
+    overflow: auto;
+  }
+  .nui-dialog__foot,
+  .nui-drawer__foot {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    flex: none;
+    gap: var(--nui-space-4);
+    padding: var(--nui-space-4) var(--nui-card-pad);
+    border-top: 1px solid var(--nui-border);
+  }
+
+  /* ── Drawer ── */
+  .nui-drawer {
+    width: min(100% - 40px, 380px);
+    max-width: none;
+    height: 100%;
+    max-height: none;
+    margin: 0 0 0 auto;
+    border-width: 0 0 0 1px;
+  }
+  .nui-drawer[data-side="left"] {
+    margin: 0 auto 0 0;
+    border-width: 0 1px 0 0;
+  }
+  .nui-drawer[open] {
+    display: flex;
+    flex-direction: column;
+    animation: nui-slide-in var(--nui-dur) var(--nui-ease);
+  }
+  .nui-drawer[data-side="left"][open] { animation-name: nui-slide-in-left; }
+  .nui-drawer__body {
+    flex: 1 1 auto;
+    min-height: 0;
+    padding: var(--nui-card-pad);
+    overflow: auto;
+  }
+
+  /* ── Toast ── */
+  .nui-toaster {
+    position: fixed;
+    right: var(--nui-space-5);
+    bottom: var(--nui-space-5);
+    z-index: var(--nui-z-toast);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: min(100% - 40px, 380px);
+    pointer-events: none;
+  }
+  .nui-toast {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--nui-space-3);
+    padding: 14px 16px;
+    border: 1px solid var(--nui-border);
+    border-left: 2px solid var(--nui-accent);
+    border-radius: var(--nui-radius-base);
+    background: var(--nui-surface-raised);
+    color: var(--nui-text);
+    font-size: var(--nui-fs-small);
+    line-height: var(--nui-lh-ui);
+    pointer-events: auto;
+    animation: nui-rise var(--nui-dur) var(--nui-ease);
+  }
+  .nui-toast--positive { border-left-color: var(--nui-positive); }
+  .nui-toast--negative { border-left-color: var(--nui-negative); }
+  .nui-toast__content {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    gap: var(--nui-space-1);
+    min-width: 0;
+  }
+  .nui-toast__title {
+    margin: 0;
+    font-weight: 600;
+  }
+  .nui-toast__desc {
+    margin: 0;
+    color: var(--nui-text-secondary);
+  }
+  .nui-toast__action {
+    display: flex;
+    margin-top: var(--nui-space-1);
+  }
+}

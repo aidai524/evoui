@@ -1,0 +1,83 @@
+/* Docs site layout (spec/05 §4). Tokens only; unlayered app CSS on top of the kit. */
+.nui-docs {
+  display: flex;
+  gap: var(--nui-space-8);
+  align-items: flex-start;
+  padding: var(--nui-space-10) 0 var(--nui-space-24);
+}
+
+.nui-docs__side {
+  position: sticky;
+  top: 110px;
+  flex: 0 0 240px;
+  max-height: calc(100vh - 140px);
+  overflow-y: auto;
+  padding-right: var(--nui-space-2);
+}
+
+.nui-docs__main {
+  flex: 1;
+  min-width: 0;
+}
+
+.nui-docs__drawer-btn {
+  display: none;
+  margin-bottom: var(--nui-space-6);
+}
+
+@media (max-width: 1080px) {
+  .nui-docs__side { display: none; }
+  .nui-docs__drawer-btn { display: block; }
+}
+
+.nui-docs__group {
+  margin: 0 0 var(--nui-space-2);
+  color: var(--nui-text-muted);
+  font-size: var(--nui-fs-micro);
+  font-weight: 700;
+  letter-spacing: var(--nui-ls-caps);
+  text-transform: uppercase;
+}
+
+.nui-docs__link {
+  display: block;
+  margin-bottom: 2px;
+  padding: 6px 10px;
+  border-left: 2px solid transparent;
+  color: var(--nui-text-secondary);
+  font-size: var(--nui-fs-small);
+  line-height: var(--nui-lh-ui);
+  text-decoration: none;
+  transition: color var(--nui-dur-fast) var(--nui-ease);
+}
+.nui-docs__link:hover { color: var(--nui-text); }
+.nui-docs__link[aria-current="page"] {
+  border-left-color: var(--nui-accent);
+  background: var(--nui-surface-sunken);
+  color: var(--nui-accent-text);
+}
+
+.nui-docs__section {
+  display: grid;
+  gap: var(--nui-space-3);
+}
+
+.nui-docs__demo {
+  padding: var(--nui-space-6);
+  border: 1px solid var(--nui-border);
+  background: var(--nui-surface);
+  overflow-x: auto;
+}
+
+.nui-docs__step {
+  display: inline-block;
+  min-width: 1.6em;
+  margin-right: var(--nui-space-2);
+  color: var(--nui-accent-text);
+  font-variant-numeric: tabular-nums;
+}
+
+.nui-docs__footer-brand {
+  font-size: 18px;
+  font-weight: 600;
+}

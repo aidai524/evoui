@@ -1,0 +1,345 @@
+/* content — see spec/04-component-reference.md §N. */
+@layer nui3.components {
+  /* ── CodeBlock (inverse surface: plum in paper, paper in night) ── */
+  .nui-code {
+    min-width: 0;
+    max-width: 100%;
+    border: 1px solid var(--nui-inverse-bg);
+    background: var(--nui-inverse-bg);
+    color: var(--nui-inverse-text);
+  }
+  .nui-code__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--nui-space-4);
+    min-height: 38px;
+    padding: 0 var(--nui-space-2) 0 var(--nui-space-4);
+    border-bottom: 1px solid color-mix(in srgb, var(--nui-inverse-text) 16%, transparent);
+    color: var(--nui-inverse-text-secondary);
+    font-size: var(--nui-fs-micro);
+    font-weight: 500;
+    line-height: var(--nui-lh-tight);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .nui-code__title { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .nui-code__tabs { display: flex; align-self: stretch; gap: var(--nui-space-4); min-width: 0; overflow-x: auto; }
+  .nui-code__tab {
+    flex: none;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--nui-inverse-text-secondary);
+    font: inherit;
+    letter-spacing: inherit;
+    text-transform: inherit;
+    cursor: pointer;
+    transition: color var(--nui-dur-fast) var(--nui-ease), box-shadow var(--nui-dur-fast) var(--nui-ease);
+  }
+  .nui-code__tab:hover { color: var(--nui-inverse-text); }
+  .nui-code__tab[aria-selected="true"] { color: var(--nui-inverse-text); box-shadow: inset 0 -2px 0 var(--nui-accent); }
+  .nui-code__tab:focus-visible { outline-offset: -2px; }
+  .nui-code__copy {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    gap: var(--nui-space-2);
+    height: 28px;
+    padding: 0 var(--nui-space-2);
+    border: 1px solid transparent;
+    background: none;
+    color: var(--nui-inverse-text-secondary);
+    font: inherit;
+    letter-spacing: inherit;
+    text-transform: inherit;
+    cursor: pointer;
+    transition: color var(--nui-dur-fast) var(--nui-ease), border-color var(--nui-dur-fast) var(--nui-ease);
+  }
+  .nui-code__copy:hover { color: var(--nui-inverse-text); border-color: color-mix(in srgb, var(--nui-inverse-text) 24%, transparent); }
+  .nui-code__copy[data-copied] { color: var(--nui-inverse-accent-text); }
+  .nui-code__pre {
+    margin: 0;
+    padding: var(--nui-space-4);
+    overflow-x: auto;
+    font-family: var(--nui-font-mono);
+    font-size: 13px;
+    line-height: 1.65;
+    tab-size: 2;
+  }
+  .nui-code__pre:focus-visible { outline-offset: -2px; }
+  .nui-code__pre > code { font: inherit; white-space: pre; }
+
+  /* ── SecretField ── */
+  .nui-secret {
+    display: flex;
+    align-items: center;
+    gap: var(--nui-space-1);
+    min-width: 0;
+    padding: 4px 4px 4px 10px;
+    border: 1px solid var(--nui-border);
+    background: var(--nui-surface-sunken);
+    color: var(--nui-text);
+  }
+  .nui-secret__value {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    font-family: var(--nui-font-mono);
+    font-size: 13px;
+    line-height: 1.4;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .nui-secret__toggle {
+    display: inline-grid;
+    flex: none;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: 1px solid transparent;
+    background: none;
+    color: var(--nui-text-muted);
+    cursor: pointer;
+    transition: color var(--nui-dur-fast) var(--nui-ease), border-color var(--nui-dur-fast) var(--nui-ease);
+  }
+  .nui-secret__toggle:hover { color: var(--nui-text); border-color: var(--nui-border-strong); }
+  .nui-secret__toggle[aria-pressed="true"] { color: var(--nui-text); box-shadow: inset 0 -2px 0 var(--nui-accent); }
+
+  /* ── Timeline ── */
+  .nui-timeline { margin: 0; padding: 0; list-style: none; }
+  .nui-timeline__item {
+    --_c: var(--nui-text-muted);
+    position: relative;
+    display: grid;
+    grid-template-columns: 20px 1fr;
+    gap: 12px;
+    padding-bottom: 18px;
+  }
+  .nui-timeline__item:last-child { padding-bottom: 0; }
+  .nui-timeline__item:not(:last-child)::before {
+    content: "";
+    position: absolute;
+    top: 22px;
+    bottom: 2px;
+    left: 9.5px;
+    width: 1px;
+    background: var(--nui-border);
+  }
+  .nui-timeline__item[data-tone="accent"] { --_c: var(--nui-accent); }
+  .nui-timeline__item[data-tone="positive"] { --_c: var(--nui-positive); }
+  .nui-timeline__item[data-tone="negative"] { --_c: var(--nui-negative); }
+  .nui-timeline__item[data-tone="info"] { --_c: var(--nui-info); }
+  .nui-timeline__dot {
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--_c);
+    border-radius: var(--nui-radius-pill);
+    background: var(--nui-surface);
+  }
+  .nui-timeline__content { min-width: 0; }
+  .nui-timeline__row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0 var(--nui-space-3);
+  }
+  .nui-timeline__title { margin: 0; color: var(--nui-text); font-size: var(--nui-fs-small); font-weight: 600; line-height: 20px; }
+  .nui-timeline__time { color: var(--nui-text-muted); font-size: var(--nui-fs-label); line-height: 20px; font-variant-numeric: tabular-nums; }
+  .nui-timeline__desc { margin: 0; color: var(--nui-text-secondary); font-size: 13px; line-height: var(--nui-lh-ui); }
+
+  /* ── Pagination ── */
+  .nui-pagination { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; }
+  .nui-pagination__btn {
+    display: inline-grid;
+    place-items: center;
+    min-width: 34px;
+    min-height: 34px;
+    padding: 0 10px;
+    border: 1px solid transparent;
+    border-radius: var(--nui-radius-control);
+    background: none;
+    color: var(--nui-text);
+    font: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    line-height: var(--nui-lh-tight);
+    font-variant-numeric: tabular-nums;
+    cursor: pointer;
+    transition: border-color var(--nui-dur-fast) var(--nui-ease), color var(--nui-dur-fast) var(--nui-ease);
+  }
+  .nui-pagination__btn:hover { border-color: var(--nui-border-strong); }
+  .nui-pagination__btn:disabled { opacity: 0.4; cursor: not-allowed; pointer-events: none; }
+  .nui-pagination__num[aria-current="page"] { border-color: var(--nui-text); font-weight: 700; }
+  .nui-pagination__prev > svg { transform: rotate(90deg); }
+  .nui-pagination__next > svg { transform: rotate(-90deg); }
+  .nui-pagination__gap {
+    display: inline-grid;
+    place-items: center;
+    min-width: 24px;
+    color: var(--nui-text-muted);
+    font-size: 13px;
+  }
+
+  /* ── Tooltip / InfoTip ── */
+  .nui-tooltip { position: relative; display: inline-flex; vertical-align: middle; }
+  .nui-tooltip__bubble {
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    z-index: var(--nui-z-overlay);
+    width: max-content;
+    max-width: 260px;
+    padding: 8px 10px;
+    border-radius: 0;
+    background: var(--nui-inverse-bg);
+    color: var(--nui-inverse-text);
+    font-size: var(--nui-fs-label);
+    font-weight: 400;
+    line-height: var(--nui-lh-ui);
+    letter-spacing: normal;
+    text-align: left;
+    text-transform: none;
+    white-space: normal;
+    pointer-events: none;
+    /* display:none while hidden so an off-screen bubble never adds scroll overflow */
+    display: none;
+    transform: translateX(-50%);
+  }
+  .nui-tooltip[data-side="bottom"] > .nui-tooltip__bubble { top: calc(100% + 8px); bottom: auto; }
+  .nui-tooltip:hover > .nui-tooltip__bubble,
+  .nui-tooltip:focus-within > .nui-tooltip__bubble {
+    display: block;
+    animation: nui-tooltip-in var(--nui-dur-fast) var(--nui-ease);
+  }
+  .nui-tooltip[data-hidden] > .nui-tooltip__bubble { display: none; }
+  @keyframes nui-tooltip-in { from { opacity: 0; } to { opacity: 1; } }
+
+  .nui-infotip {
+    display: inline-grid;
+    place-items: center;
+    width: 15px;
+    height: 15px;
+    padding: 0;
+    border: 1px solid var(--nui-border-strong);
+    border-radius: var(--nui-radius-pill);
+    background: var(--nui-surface);
+    color: var(--nui-text-muted);
+    font-family: var(--nui-font-display);
+    font-size: 9px;
+    line-height: 1;
+    cursor: help;
+    transition: color var(--nui-dur-fast) var(--nui-ease), border-color var(--nui-dur-fast) var(--nui-ease);
+  }
+  .nui-infotip:hover { color: var(--nui-text); border-color: var(--nui-text-muted); }
+
+  /* ── Disclosure ── */
+  .nui-disclosure { border-bottom: 1px solid var(--nui-border); }
+  .nui-disclosure__summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--nui-space-4);
+    padding: 16px 0;
+    color: var(--nui-text);
+    font-size: 15px;
+    font-weight: 600;
+    line-height: var(--nui-lh-heading);
+    list-style: none;
+    cursor: pointer;
+    transition: color var(--nui-dur-fast) var(--nui-ease);
+  }
+  .nui-disclosure__summary::-webkit-details-marker { display: none; }
+  .nui-disclosure__summary::marker { content: ""; }
+  .nui-disclosure__summary::after {
+    content: "+";
+    flex: none;
+    width: 22px;
+    color: var(--nui-text-muted);
+    font-size: 22px;
+    font-weight: 300;
+    line-height: 1;
+    text-align: center;
+  }
+  .nui-disclosure[open] > .nui-disclosure__summary::after { content: "−"; }
+  .nui-disclosure__summary:hover::after { color: var(--nui-text); }
+  .nui-disclosure__body {
+    padding: 0 0 18px;
+    color: var(--nui-text-secondary);
+    font-size: var(--nui-fs-small);
+    line-height: 1.7;
+  }
+  .nui-disclosure__body > p { margin: 0; }
+  .nui-disclosure__body > * + * { margin-top: var(--nui-space-3); }
+
+  /* ── Identicon ── */
+  .nui-identicon { display: inline-block; flex: none; vertical-align: middle; }
+  .nui-identicon--grid { border-radius: var(--nui-radius-pill); }
+
+  /* ── NFTCard ── */
+  .nui-nft {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    border: 1px solid var(--nui-border);
+    background: var(--nui-surface);
+    color: var(--nui-text);
+    transition: border-color var(--nui-dur-fast) var(--nui-ease);
+  }
+  .nui-nft[data-clickable="true"]:hover,
+  .nui-nft[data-clickable="true"]:focus-within { border-color: var(--nui-border-strong); }
+  .nui-nft__media {
+    position: relative;
+    aspect-ratio: 1;
+    overflow: hidden;
+    background: var(--nui-surface-sunken);
+  }
+  .nui-nft__media > img,
+  .nui-nft__media > .nui-identicon {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform var(--nui-dur-slow) var(--nui-ease);
+  }
+  .nui-nft:hover .nui-nft__media > img,
+  .nui-nft:hover .nui-nft__media > .nui-identicon { transform: scale(1.03); }
+  .nui-nft__badge { position: absolute; top: 10px; left: 10px; display: flex; gap: var(--nui-space-1); }
+  .nui-nft__badge .nui-badge:not(.nui-badge--accent) { background: var(--nui-surface); }
+  .nui-nft__body { display: grid; gap: 4px; min-width: 0; padding: 14px 16px 16px; }
+  .nui-nft__collection {
+    margin: 0;
+    color: var(--nui-text-muted);
+    font-size: var(--nui-fs-micro);
+    font-weight: 600;
+    line-height: 1.4;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .nui-nft__name {
+    margin: 0;
+    overflow: hidden;
+    color: var(--nui-text);
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 1.4;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .nui-nft__link { color: inherit; text-decoration: none; }
+  .nui-nft__link::before { content: ""; position: absolute; inset: 0; z-index: 1; }
+  .nui-nft__link:focus-visible { outline: none; }
+  .nui-nft__link:focus-visible::before { outline: 2px solid var(--nui-focus-ring); outline-offset: 3px; }
+  .nui-nft__foot {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--nui-space-2);
+    font-variant-numeric: tabular-nums;
+  }
+  .nui-nft__price { font-size: var(--nui-fs-small); font-weight: 700; }
+  .nui-nft__meta { color: var(--nui-text-muted); font-size: var(--nui-fs-label); }
+}

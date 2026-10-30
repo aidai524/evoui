@@ -1,0 +1,5 @@
+/* NUI3 full bundle: tokens + global base + components. Import once at the app root. */
+@import "./fonts.css";
+@import "./tokens.css";
+@import "./base.css";
+@import "./components.css";

@@ -1,0 +1,91 @@
+/* data — see spec/04-component-reference.md §L. */
+@layer nui3.components {
+  /* ── Meter ── */
+  .nui-meter {
+    --_c: var(--nui-accent);
+    display: grid;
+    gap: 8px;
+    min-width: 0;
+  }
+  .nui-meter[data-tone="positive"] { --_c: var(--nui-positive); }
+  .nui-meter[data-tone="warning"] { --_c: var(--nui-warning); }
+  .nui-meter[data-tone="negative"] { --_c: var(--nui-negative); }
+  .nui-meter__head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--nui-space-3);
+    font-size: 13px;
+    line-height: var(--nui-lh-ui);
+  }
+  .nui-meter__label { min-width: 0; color: var(--nui-text-muted); }
+  .nui-meter__value { flex: none; color: var(--nui-text); font-weight: 600; font-variant-numeric: tabular-nums; }
+  .nui-meter__track {
+    position: relative;
+    height: 8px;
+    border: 1px solid var(--nui-border);
+    background: var(--nui-border-soft);
+  }
+  .nui-meter__fill {
+    display: block;
+    width: var(--_pct, 0%);
+    height: 100%;
+    background: var(--_c);
+    transition: width var(--nui-dur-slow) var(--nui-ease);
+  }
+  .nui-meter__mark {
+    position: absolute;
+    top: -4px;
+    bottom: -4px;
+    width: 1px;
+    margin-left: -0.5px;
+    background: var(--nui-text-muted);
+  }
+  .nui-meter__marks {
+    position: relative;
+    height: 14px;
+    color: var(--nui-text-muted);
+    font-size: var(--nui-fs-micro);
+    line-height: 14px;
+    font-variant-numeric: tabular-nums;
+  }
+  .nui-meter__marks > span {
+    position: absolute;
+    top: 0;
+    transform: translateX(-50%);
+    white-space: nowrap;
+  }
+  .nui-meter__marks > span[data-edge="end"] { transform: translateX(-100%); }
+  .nui-meter__marks > span[data-edge="start"] { transform: none; }
+
+  /* ── UptimeBar ── */
+  .nui-uptime { display: grid; gap: 8px; min-width: 0; }
+  .nui-uptime__head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--nui-space-3);
+    color: var(--nui-text-secondary);
+    font-size: 13px;
+    line-height: var(--nui-lh-ui);
+  }
+  .nui-uptime__label { min-width: 0; color: var(--nui-text); font-weight: 500; }
+  .nui-uptime__head strong { color: var(--nui-text); font-weight: 600; font-variant-numeric: tabular-nums; }
+  .nui-uptime__bar {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(0, 1fr);
+    gap: 2px;
+    height: 28px;
+  }
+  .nui-uptime__day {
+    min-width: 0;
+    background: var(--nui-positive);
+    opacity: 0.75;
+    transition: opacity var(--nui-dur-fast) var(--nui-ease);
+  }
+  .nui-uptime__day:hover { opacity: 1; }
+  .nui-uptime__day[data-status="degraded"] { background: var(--nui-warning); }
+  .nui-uptime__day[data-status="outage"] { background: var(--nui-negative); }
+  .nui-uptime__day[data-status="none"] { background: var(--nui-border); }
+}

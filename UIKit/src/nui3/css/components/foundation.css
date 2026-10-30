@@ -1,0 +1,230 @@
+/* Foundation: root scope, keyframes, typography + layout primitives, base utility classes, brand dark sections. */
+@layer nui3.components {
+  /* Scope used by ThemeProvider (and embedding) so a subtree gets background + type without the global reset. */
+  .nui-root {
+    background: var(--nui-bg);
+    color: var(--nui-text);
+    font-family: var(--nui-font-sans);
+    font-size: var(--nui-fs-body);
+    line-height: var(--nui-lh-body);
+    -webkit-font-smoothing: antialiased;
+    color-scheme: inherit;
+  }
+
+  /* ── Global keyframes (shared by every component) ── */
+  @keyframes nui-spin { to { transform: rotate(360deg); } }
+  @keyframes nui-rise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+  @keyframes nui-slide-in { from { opacity: 0; transform: translateX(24px); } to { opacity: 1; transform: none; } }
+  @keyframes nui-slide-in-left { from { opacity: 0; transform: translateX(-24px); } to { opacity: 1; transform: none; } }
+  @keyframes nui-pulse { 50% { opacity: 0.3; } }
+  @keyframes nui-shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+  @keyframes nui-indeterminate { from { transform: translateX(-100%); } to { transform: translateX(340%); } }
+  @keyframes nui-flash-up {
+    from { background-color: color-mix(in srgb, var(--nui-positive) 22%, transparent); }
+    to { background-color: transparent; }
+  }
+  @keyframes nui-flash-down {
+    from { background-color: color-mix(in srgb, var(--nui-negative) 22%, transparent); }
+    to { background-color: transparent; }
+  }
+
+  /* Shared 12px spinner (Button loading etc.) */
+  .nui-spinner {
+    display: inline-block;
+    flex: none;
+    width: 12px;
+    height: 12px;
+    border: 1.5px solid currentColor;
+    border-right-color: transparent;
+    border-radius: var(--nui-radius-pill);
+    animation: nui-spin 0.8s linear infinite;
+  }
+
+  /* Focus ring baseline for anything nui-* that is focusable. */
+  [class*="nui-"]:focus-visible {
+    outline: 2px solid var(--nui-focus-ring);
+    outline-offset: 3px;
+  }
+
+  /* ── Typography ── */
+  .nui-display {
+    margin: 0;
+    color: var(--nui-text);
+    font-family: var(--nui-font-display);
+    font-size: var(--nui-fs-display-m);
+    font-weight: 400;
+    line-height: var(--nui-lh-display);
+    letter-spacing: var(--nui-ls-display);
+    text-wrap: balance;
+  }
+  .nui-display--xl { font-size: var(--nui-fs-display-xl); }
+  .nui-display--l { font-size: var(--nui-fs-display-l); letter-spacing: normal; }
+  .nui-display--s { font-size: var(--nui-fs-display-s); line-height: 1.15; }
+
+  .nui-heading {
+    margin: 0;
+    color: var(--nui-text);
+    font-size: var(--nui-fs-h2);
+    font-weight: 700;
+    line-height: var(--nui-lh-heading);
+    text-wrap: balance;
+  }
+  .nui-heading--3 { font-size: var(--nui-fs-h3); font-weight: 600; line-height: 1.2; }
+  .nui-heading--4 { font-size: var(--nui-fs-h4); font-weight: 600; line-height: var(--nui-lh-heading); }
+
+  .nui-eyebrow {
+    margin: 0;
+    color: var(--nui-text-muted);
+    font-size: var(--nui-fs-label);
+    font-weight: 700;
+    line-height: 1.4;
+    letter-spacing: var(--nui-ls-caps);
+    text-transform: uppercase;
+  }
+  .nui-eyebrow--accent { color: var(--nui-accent-text); }
+
+  .nui-lead {
+    max-width: 52ch;
+    margin: 0;
+    color: var(--nui-text-secondary);
+    font-size: var(--nui-fs-lead);
+    line-height: 1.72;
+  }
+
+  .nui-title {
+    margin: 0;
+    font-size: var(--nui-fs-h3);
+    font-weight: 500;
+    line-height: 28px;
+    letter-spacing: var(--nui-ls-title);
+    text-transform: uppercase;
+  }
+
+  .nui-prose { max-width: 65ch; line-height: var(--nui-lh-body); }
+  .nui-prose > * + * { margin-top: 1em; }
+
+  .nui-text-secondary { color: var(--nui-text-secondary); }
+  .nui-text-muted { color: var(--nui-text-muted); }
+  .nui-text-small { font-size: var(--nui-fs-small); line-height: var(--nui-lh-ui); }
+  .nui-mono { font-family: var(--nui-font-mono); font-size: 0.92em; }
+  .nui-num { font-variant-numeric: tabular-nums; }
+
+  .nui-link {
+    color: inherit;
+    text-decoration: none;
+    background: linear-gradient(var(--nui-accent), var(--nui-accent)) no-repeat left bottom / 100% 1px;
+    transition: background-size var(--nui-dur-fast) var(--nui-ease);
+  }
+  .nui-link:hover { background-size: 100% 2px; }
+
+  .nui-divider {
+    height: 1px;
+    margin: 0;
+    border: 0;
+    background: var(--nui-border);
+  }
+
+  .nui-sr-only {
+    position: absolute !important;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .nui-hide-mobile { }
+  @media (max-width: 640px) {
+    .nui-hide-mobile { display: none; }
+  }
+
+  /* ── Layout ── */
+  .nui-shell {
+    width: min(100% - 2 * var(--nui-gutter), var(--nui-container));
+    margin-inline: auto;
+  }
+
+  .nui-section {
+    padding-block: var(--nui-section-y);
+  }
+  .nui-section--inverse {
+    background: var(--nui-inverse-bg);
+    color: var(--nui-inverse-text);
+  }
+  .nui-section--inverse :where(.nui-lead, .nui-eyebrow, .nui-text-secondary, .nui-text-muted) {
+    color: var(--nui-inverse-text-secondary);
+  }
+  .nui-section--inverse :where(.nui-eyebrow--accent) { color: var(--nui-inverse-accent-text); }
+  .nui-section--inverse :where(.nui-display, .nui-heading) { color: var(--nui-inverse-text); }
+
+  /* Brand dark sections stay dark in both themes, so they read primitives (02 §1 exception). */
+  .nui-section--plum,
+  .nui-section--navy {
+    color: var(--nui-color-white);
+  }
+  .nui-section--plum { background: var(--nui-color-plum); }
+  .nui-section--navy { background: var(--nui-color-navy); }
+  .nui-section--plum :where(.nui-lead, .nui-eyebrow, .nui-text-secondary, .nui-text-muted),
+  .nui-section--navy :where(.nui-lead, .nui-eyebrow, .nui-text-secondary, .nui-text-muted) {
+    color: var(--nui-color-night-text-2);
+  }
+  .nui-section--plum :where(.nui-eyebrow--accent),
+  .nui-section--navy :where(.nui-eyebrow--accent) {
+    color: var(--nui-color-gold);
+  }
+  .nui-section--plum :where(.nui-display, .nui-heading),
+  .nui-section--navy :where(.nui-display, .nui-heading) {
+    color: var(--nui-color-white);
+  }
+
+  .nui-stack {
+    display: flex;
+    flex-direction: column;
+    gap: var(--nui-stack-gap, var(--nui-space-4));
+  }
+
+  .nui-cluster {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: var(--nui-cluster-justify, flex-start);
+    gap: var(--nui-cluster-gap, var(--nui-space-3));
+  }
+
+  .nui-grid {
+    --nui-cols: 3;
+    display: grid;
+    grid-template-columns: repeat(var(--nui-cols), minmax(0, 1fr));
+    gap: var(--nui-grid-gap);
+  }
+  .nui-grid--1 { --nui-cols: 1; }
+  .nui-grid--2 { --nui-cols: 2; }
+  .nui-grid--3 { --nui-cols: 3; }
+  .nui-grid--4 { --nui-cols: 4; }
+  .nui-grid--auto { grid-template-columns: repeat(auto-fill, minmax(min(var(--nui-min, 280px), 100%), 1fr)); }
+  @media (max-width: 1080px) {
+    .nui-grid--3,
+    .nui-grid--4 { --nui-cols: 2; }
+  }
+  @media (max-width: 640px) {
+    .nui-grid--2,
+    .nui-grid--3,
+    .nui-grid--4 { --nui-cols: 1; }
+  }
+}
+
+/* Embedded bundle has no base layer: honour reduced motion for nui-* nodes here too. */
+@media (prefers-reduced-motion: reduce) {
+  @layer nui3.components {
+    [class*="nui-"],
+    [class*="nui-"]::before,
+    [class*="nui-"]::after {
+      transition-duration: 0.01ms;
+      animation-duration: 0.01ms;
+      animation-iteration-count: 1;
+    }
+  }
+}

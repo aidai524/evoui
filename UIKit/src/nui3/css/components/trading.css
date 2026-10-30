@@ -1,0 +1,106 @@
+/* trading: OrderBook, LeverageSlider, PnL, PositionTable, LiveValue, Countdown. */
+@layer nui3.components {
+  /* ── OrderBook ── */
+  .nui-book { display: grid; min-width: 0; font-size: var(--nui-fs-label); font-variant-numeric: tabular-nums; }
+  .nui-book__head,
+  .nui-book__row {
+    display: grid;
+    grid-template-columns: 1.1fr 1fr 1fr;
+    align-items: center;
+    padding-inline: var(--nui-cell-px);
+  }
+  .nui-book__head > :not(:first-child),
+  .nui-book__row > :not(:first-child) { text-align: right; }
+  .nui-book__head {
+    padding-block: var(--nui-space-2);
+    border-bottom: 1px solid var(--nui-border-soft);
+    color: var(--nui-text-muted);
+    font-size: var(--nui-fs-micro);
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+  .nui-book__side { display: grid; }
+  .nui-book__row {
+    --_c: var(--nui-positive);
+    position: relative;
+    height: 22px;
+    color: var(--nui-text-secondary);
+    isolation: isolate;
+  }
+  .nui-book__row::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 0 auto;
+    z-index: -1;
+    width: var(--_depth, 0%);
+    background: var(--_c);
+    opacity: 0.12;
+  }
+  .nui-book__row--bid { --_c: var(--nui-positive); }
+  .nui-book__row--ask { --_c: var(--nui-negative); }
+  .nui-book__price { color: var(--_c); font-weight: 600; }
+  .nui-book__row[role="button"] { cursor: pointer; transition: background-color var(--nui-dur-fast) var(--nui-ease); }
+  .nui-book__row[role="button"]:hover { background: var(--nui-surface-sunken); }
+  .nui-book__row[role="button"]:focus-visible { outline-offset: -2px; }
+  .nui-book__mid {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--nui-space-3);
+    padding: var(--nui-space-2) var(--nui-cell-px);
+    border-block: 1px solid var(--nui-border-soft);
+  }
+  .nui-book__last { color: var(--nui-text); font-size: 16px; font-weight: 700; }
+  .nui-book__last--up { color: var(--nui-positive); }
+  .nui-book__last--down { color: var(--nui-negative); }
+  .nui-book__spread { color: var(--nui-text-muted); }
+
+  /* ── LeverageSlider ── */
+  .nui-leverage { display: grid; gap: var(--nui-space-3); }
+  .nui-leverage__head { display: flex; align-items: center; justify-content: space-between; gap: var(--nui-space-3); }
+  .nui-leverage__label {
+    color: var(--nui-text-muted);
+    font-size: var(--nui-fs-micro);
+    font-weight: 700;
+    letter-spacing: var(--nui-ls-caps);
+    text-transform: uppercase;
+  }
+  .nui-leverage__value {
+    min-width: 48px;
+    padding: 4px 8px;
+    border: 1px solid var(--nui-border);
+    color: var(--nui-text);
+    font-size: var(--nui-fs-small);
+    font-weight: 700;
+    line-height: 1.4;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+  }
+  .nui-leverage__value--warning { border-color: var(--nui-warning); color: var(--nui-warning); }
+  .nui-leverage__value--negative { border-color: var(--nui-negative); color: var(--nui-negative); }
+
+  /* ── PnL ── */
+  .nui-pnl { display: inline-flex; align-items: baseline; gap: 0.4em; font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .nui-pnl small { font-size: 0.85em; font-weight: 500; }
+  .nui-pnl[data-sign="positive"] { color: var(--nui-positive); }
+  .nui-pnl[data-sign="negative"] { color: var(--nui-negative); }
+
+  /* ── PositionTable ── */
+  .nui-positions__market { display: inline-flex; align-items: center; gap: var(--nui-space-2); font-weight: 600; }
+  .nui-positions__liq { color: var(--nui-warning); }
+
+  /* ── LiveValue ── */
+  .nui-live { font-variant-numeric: tabular-nums; }
+  .nui-live[data-flash="up"] { animation: nui-flash-up 0.9s var(--nui-ease); }
+  .nui-live[data-flash="down"] { animation: nui-flash-down 0.9s var(--nui-ease); }
+  .nui-live[data-dir="up"] { color: var(--nui-positive); }
+  .nui-live[data-dir="down"] { color: var(--nui-negative); }
+
+  /* ── Countdown ── */
+  .nui-countdown { display: inline-flex; align-items: baseline; gap: 0.5em; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .nui-countdown__part { display: inline-flex; align-items: baseline; gap: 0.1em; }
+  .nui-countdown__num { font-size: 1.25em; font-weight: 700; }
+  .nui-countdown__unit { color: var(--nui-text-muted); font-size: 0.8em; }
+  .nui-countdown[data-ended] { color: var(--nui-text-muted); font-weight: 600; }
+}

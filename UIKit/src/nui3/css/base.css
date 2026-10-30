@@ -1,0 +1,60 @@
+/* nui3.base — global reset + body typography. Only in the full bundle (nui3.css), never in the embeddable components.css. */
+@layer nui3.base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    margin: 0;
+    background: var(--nui-bg);
+    color: var(--nui-text);
+    font-family: var(--nui-font-sans);
+    font-size: var(--nui-fs-body);
+    line-height: var(--nui-lh-body);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  h1, h2, h3, h4, h5, h6, p, figure, blockquote, dl, dd {
+    margin: 0;
+  }
+
+  img, svg, video, canvas {
+    display: block;
+    max-width: 100%;
+  }
+
+  button, input, select, textarea {
+    font: inherit;
+    color: inherit;
+  }
+
+  a {
+    color: inherit;
+  }
+
+  ::selection {
+    background: var(--nui-accent);
+    color: var(--nui-on-accent);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      transition-duration: 0.01ms !important;
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+    }
+    html {
+      scroll-behavior: auto;
+    }
+  }
+}
