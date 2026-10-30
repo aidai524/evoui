@@ -25,7 +25,7 @@ export const GROUPS: { id: GroupId; title: string; count: number }[] = [
   { id: 'forms', title: 'Forms', count: 10 },
   { id: 'navigation', title: 'Navigation', count: 6 },
   { id: 'surfaces', title: 'Surfaces', count: 13 },
-  { id: 'overlays', title: 'Overlays', count: 3 },
+  { id: 'overlays', title: 'Overlays', count: 4 },
   { id: 'zcash', title: 'Zcash', count: 14 },
   { id: 'defi', title: 'DeFi', count: 5 },
   { id: 'trading', title: 'Trading', count: 6 },

@@ -88,6 +88,10 @@
     --nui-dur: 0.3s;
     --nui-dur-slow: 0.5s;
     --nui-ease: cubic-bezier(0.4, 0, 0.2, 1);
+    --nui-dur-instant: 0.12s;
+    --nui-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+    --nui-ease-in: cubic-bezier(0.55, 0, 1, 0.45);
+    --nui-ease-spring: cubic-bezier(0.34, 1.36, 0.64, 1);
     --nui-z-sticky: 20;
     --nui-z-overlay: 100;
     --nui-z-toast: 110;

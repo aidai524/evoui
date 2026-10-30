@@ -21,7 +21,8 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   target?: AnchorHTMLAttributes<HTMLAnchorElement>['target']
   rel?: string
   download?: AnchorHTMLAttributes<HTMLAnchorElement>['download']
-  ref?: Ref<HTMLButtonElement & HTMLAnchorElement>
+  /** HTMLButtonElement, or HTMLAnchorElement when `href` is set. */
+  ref?: Ref<HTMLButtonElement | HTMLAnchorElement>
   children?: ReactNode
 }
 
@@ -66,7 +67,7 @@ export function Button({
     const inactive = disabled || loading
     return (
       <a
-        ref={ref}
+        ref={ref as Ref<HTMLAnchorElement>}
         className={cls}
         href={inactive ? undefined : href}
         target={target ?? (external ? '_blank' : undefined)}
@@ -86,7 +87,7 @@ export function Button({
 
   return (
     <button
-      ref={ref}
+      ref={ref as Ref<HTMLButtonElement>}
       type={type}
       className={cls}
       disabled={disabled || loading}

@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { Button, Cluster, Dialog, Drawer, Field, Input, Stack, Switch, ToastProvider, useToast } from '../../nui3'
+import { useRef, useState } from 'react'
+import { Button, Cluster, Dialog, Drawer, Field, Input, Popover, Stack, Switch, ToastProvider, useToast } from '../../nui3'
 import type { ComponentDoc } from '../types'
 
 function DialogDemo() {
@@ -140,6 +140,24 @@ function ToastButtons() {
   )
 }
 
+function PopoverDemo() {
+  const [open, setOpen] = useState(false)
+  const anchor = useRef<HTMLButtonElement>(null)
+  return (
+    <div style={{ overflow: 'hidden', padding: 16, border: '1px dashed var(--nui-border)' }}>
+      <Button ref={anchor} variant="outline" aria-expanded={open} onClick={() => setOpen((o) => !o)}>
+        Fee details
+      </Button>
+      <Popover open={open} onOpenChange={setOpen} anchor={anchor} label="Fee details" style={{ width: 260 }}>
+        <Stack gap={3}>
+          <strong>Network fee 0.0001 ZEC</strong>
+          <p className="nui-text-secondary" style={{ margin: 0 }}>Rendered in a portal on &lt;body&gt;, so the dashed container&apos;s overflow:hidden does not clip it. Flips when there is no room below.</p>
+        </Stack>
+      </Popover>
+    </div>
+  )
+}
+
 export const docs: ComponentDoc[] = [
   {
     name: 'Dialog',
@@ -175,6 +193,29 @@ export const docs: ComponentDoc[] = [
       ['side', "'right' | 'left' = 'right'"],
       ['footer', 'ReactNode'],
       ['dismissible', 'boolean = true'],
+    ],
+  },
+  {
+    name: 'Popover / FloatingPanel / Portal',
+    group: 'overlays',
+    className: 'nui-floating',
+    description:
+      'Shared floating layer used by Tooltip, Select, Menu and DatePicker: rendered in a theme-aware portal on <body> (never clipped by overflow), anchored with flip/shift, animated in and out via data-state.',
+    Demo: PopoverDemo,
+    usage: `const anchor = useRef<HTMLButtonElement>(null)
+<Button ref={anchor} onClick={() => setOpen(!open)}>Fee details</Button>
+<Popover open={open} onOpenChange={setOpen} anchor={anchor} label="Fee details">…</Popover>
+
+// Lower level
+<FloatingPanel open anchor={ref} placement="bottom-start" matchWidth onDismiss={close}>…</FloatingPanel>
+const { mounted, state } = usePresence(open, ref) // keep mounted for the exit animation`,
+    props: [
+      ['open / onOpenChange', 'boolean / (open) => void'],
+      ['anchor', 'RefObject<HTMLElement>'],
+      ['placement', "Placement = 'bottom-start' (flips automatically)"],
+      ['offset', 'number = 6'],
+      ['matchWidth', "boolean | 'min'"],
+      ['variant', "'surface' | 'inverse'"],
     ],
   },
   {

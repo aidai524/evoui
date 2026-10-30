@@ -88,6 +88,10 @@ export const BASE_TOKENS: ThemeTokens = {
   "dur": "0.3s",
   "dur-slow": "0.5s",
   "ease": "cubic-bezier(0.4, 0, 0.2, 1)",
+  "dur-instant": "0.12s",
+  "ease-out": "cubic-bezier(0.22, 1, 0.36, 1)",
+  "ease-in": "cubic-bezier(0.55, 0, 1, 0.45)",
+  "ease-spring": "cubic-bezier(0.34, 1.36, 0.64, 1)",
   "z-sticky": "20",
   "z-overlay": "100",
   "z-toast": "110"

@@ -139,3 +139,55 @@
     margin-top: var(--nui-space-1);
   }
 }
+
+/* ── Floating layer (Portal + FloatingPanel + Popover) — shared by Tooltip, Select, Menu, DatePicker ── */
+@layer nui3.components {
+  .nui-portal { display: contents; }
+  .nui-floating {
+    z-index: var(--nui-z-overlay);
+    box-sizing: border-box;
+    max-height: var(--nui-floating-max-h, 360px);
+    overflow: auto;
+    border: 1px solid var(--nui-border);
+    border-radius: var(--nui-radius-base);
+    background: var(--nui-surface-raised);
+    color: var(--nui-text);
+    font-family: var(--nui-font-sans);
+    font-size: var(--nui-fs-small);
+    line-height: var(--nui-lh-ui);
+    box-shadow: 0 12px 32px -12px color-mix(in srgb, var(--nui-color-black, #000) 28%, transparent);
+    overscroll-behavior: contain;
+    --nui-floating-dx: 0px;
+    --nui-floating-dy: -6px;
+    animation: nui-floating-in var(--nui-dur-fast) var(--nui-ease-out) both;
+  }
+  .nui-floating[data-side="top"] { --nui-floating-dy: 6px; }
+  .nui-floating[data-side="left"] { --nui-floating-dx: 6px; --nui-floating-dy: 0px; }
+  .nui-floating[data-side="right"] { --nui-floating-dx: -6px; --nui-floating-dy: 0px; }
+  .nui-floating[data-state="closed"] {
+    pointer-events: none;
+    animation: nui-floating-out var(--nui-dur-instant) var(--nui-ease-in) both;
+  }
+  .nui-floating--inverse {
+    max-width: 260px;
+    overflow: visible;
+    padding: 8px 10px;
+    border-color: transparent;
+    background: var(--nui-inverse-bg);
+    color: var(--nui-inverse-text);
+    font-size: var(--nui-fs-micro);
+    line-height: 1.5;
+    box-shadow: none;
+    pointer-events: none;
+  }
+  .nui-popover { padding: var(--nui-space-4); }
+
+  @keyframes nui-floating-in {
+    from { opacity: 0; transform: translate(var(--nui-floating-dx), var(--nui-floating-dy)) scale(0.98); }
+    to { opacity: 1; transform: none; }
+  }
+  @keyframes nui-floating-out {
+    from { opacity: 1; transform: none; }
+    to { opacity: 0; transform: translate(var(--nui-floating-dx), var(--nui-floating-dy)) scale(0.98); }
+  }
+}
