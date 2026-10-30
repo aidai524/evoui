@@ -9,16 +9,16 @@ Rules: spec/01-design-principles.md · Conventions: CONVENTIONS.md · Agent guid
 - Theme: <html data-nui-theme="paper|night|auto">, density data-nui-density="compact", ThemeProvider for subtrees, defineTheme + checkContrast for custom themes
 - i18n: LocaleProvider locale="en|zh", useNuiLocale() → { m, number, t }
 
-## Components (99)
+## Components (101)
 - theme: ThemeProvider
-- foundation: Display, Heading, Eyebrow, Lead, Shell, Section, Stack, Cluster, Grid
+- foundation: Display, Heading, Eyebrow, Lead, Shell, Section, Stack, Cluster, Grid, Icons (src/nui3/icons, *Icon), Spinner
 - actions: Button, IconButton, ChipGroup, Tabs, TabPanel, Segmented
 - forms: Field, Input, Textarea, Select, InputGroup, SearchInput, Switch, Checkbox, Slider, FileDrop
 - navigation: ZcashMark, Brand, Header, Breadcrumb, Footer, SubNav
 - surfaces: Card, ProjectCard, Panel, Stats, Stat, Badge, Alert, DataTable, KeyValue, Stepper, Progress, Skeleton, EmptyState
 - overlays: Dialog, Drawer, ToastProvider / useToast
 - zcash: Address, Hash, CopyButton / useCopy, Amount, PriceChange, PrivacyBadge, PoolBadge, ChainBadge, TokenIcon / TokenPair, TxStatus, SyncProgress, MemoInput, ReceiveQR, usePrivacyLevel
-- defi: TokenAmountInput, TokenPicker, SwapSwitch, HealthFactor, DetailList
+- defi: TokenAmountInput (price → fiat, built-in token dropdown, empty / insufficient / loading states), TokenPicker / TokenList, SwapSwitch, HealthFactor, DetailList
 - trading: OrderBook, LeverageSlider, PnL, PositionTable, LiveValue, Countdown
 - charts: LineChart, PriceChart, CandleChart, BarChart, DonutChart, DepthChart, BondingCurve, BondingCurveChart, Sparkline, Legend
 - data: Meter, UptimeBar
@@ -28,7 +28,7 @@ Rules: spec/01-design-principles.md · Conventions: CONVENTIONS.md · Agent guid
 - i18n: LocaleProvider / useNuiLocale
 
 ## Utilities (src/nui3/utils)
-- amounts: formatUnits, parseUnits, tryParseUnits, sanitizeAmountInput, formatAmount, formatFiat, formatPercent, formatCompact, ZEC_DECIMALS, ZATOSHI_PER_ZEC
+- amounts: formatUnits, parseUnits, tryParseUnits, sanitizeAmountInput, formatAmount, formatFiat, formatFiatDecimal, mulDecimal, fiatValue, toDecimalString, percentOf, formatPercent, formatCompact, ZEC_DECIMALS, ZATOSHI_PER_ZEC
 - addresses: parseAddress, isValidAddress, isShieldedAddress, addressKind, verifyBech32, truncateMiddle, ADDRESS_KIND_LABEL
 - memo / ZIP-321: MEMO_MAX_BYTES, memoByteLength, isMemoValid, truncateMemo, encodeMemoBase64Url, buildPaymentUri
 - CSV / batch: parseCsv, parsePaymentCsv, validatePayments

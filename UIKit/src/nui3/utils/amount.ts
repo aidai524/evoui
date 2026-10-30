@@ -135,3 +135,75 @@ export function formatPercent(n: number, digits = 2, locale = 'en-US', signed = 
 export function formatCompact(n: number, locale = 'en-US'): string {
   return new Intl.NumberFormat(locale, { notation: 'compact', maximumFractionDigits: 1 }).format(n)
 }
+
+/* ── Decimal-safe fiat math (no float multiplication) ── */
+
+/** number | decimal string → plain decimal string ("1e-7" → "0.0000001"). Null for non-finite / invalid input. */
+export function toDecimalString(x: number | string): string | null {
+  if (typeof x === 'number') {
+    if (!Number.isFinite(x)) return null
+    const s = String(x)
+    return /e/i.test(s) ? x.toLocaleString('en-US', { useGrouping: false, maximumFractionDigits: 20 }) : s
+  }
+  const s = x.replace(/[,_\s]/g, '')
+  if (!/^-?(\d+\.?\d*|\.\d+)$/.test(s)) return null
+  return s
+}
+
+function splitDecimal(s: string): { neg: boolean; digits: bigint; scale: number } {
+  const neg = s.startsWith('-')
+  const body = neg ? s.slice(1) : s
+  const [w = '', f = ''] = body.split('.')
+  return { neg, digits: BigInt((w || '0') + f), scale: f.length }
+}
+
+function joinDecimal(neg: boolean, digits: bigint, scale: number): string {
+  const str = digits.toString().padStart(scale + 1, '0')
+  const whole = str.slice(0, str.length - scale)
+  const frac = scale ? str.slice(-scale).replace(/0+$/, '') : ''
+  const out = `${whole}${frac ? `.${frac}` : ''}`
+  return neg && digits !== 0n ? `-${out}` : out
+}
+
+/** Exact product of two decimals as a decimal string: mulDecimal('0.1', 0.2) → "0.02". Null if either input is invalid. */
+export function mulDecimal(a: number | string, b: number | string): string | null {
+  const sa = toDecimalString(a)
+  const sb = toDecimalString(b)
+  if (sa == null || sb == null) return null
+  const x = splitDecimal(sa)
+  const y = splitDecimal(sb)
+  return joinDecimal(x.neg !== y.neg, x.digits * y.digits, x.scale + y.scale)
+}
+
+/**
+ * Fiat value of a typed token amount: `amount` (decimal string as typed) × `price` (fiat per token).
+ * Exact decimal string, or null when the amount is empty / incomplete ("", ".") or there is no price.
+ */
+export function fiatValue(amount: string, price: number | string | null | undefined): string | null {
+  const a = amount.trim()
+  if (price == null || a === '' || a === '.') return null
+  return mulDecimal(a.replace(/\.$/, ''), price)
+}
+
+/** Currency display of a decimal string (or number) without going through a float. Non-zero values under 0.01 get 4 decimals. */
+export function formatFiatDecimal(value: string | number, currency = 'USD', locale = 'en-US'): string {
+  const s = toDecimalString(value) ?? '0'
+  const { digits, scale } = splitDecimal(s)
+  // |value| < 0.01  ⇔  digits < 10^(scale − 2)
+  const small = digits !== 0n && scale > 2 && digits < 10n ** BigInt(scale - 2)
+  const fmt = new Intl.NumberFormat(locale, {
+    style: 'currency',
+    currency,
+    minimumFractionDigits: small ? 4 : 2,
+    maximumFractionDigits: small ? 4 : 2,
+  })
+  // Intl.NumberFormat v3 formats decimal strings exactly; the cast only satisfies the lib typings.
+  return fmt.format(s as unknown as number)
+}
+
+/** `pct` percent of a base-unit balance, floored (never rounds past the balance). 100 → the balance exactly. */
+export function percentOf(balance: bigint, pct: number): bigint {
+  if (pct >= 100) return balance
+  if (pct <= 0) return 0n
+  return (balance * BigInt(Math.round(pct * 100))) / 10000n
+}

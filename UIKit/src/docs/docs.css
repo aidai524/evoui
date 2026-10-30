@@ -81,3 +81,35 @@
   font-size: 18px;
   font-weight: 600;
 }
+
+/* Icon gallery (Icons doc page) */
+.nui-docs__icons {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(112px, 1fr));
+  margin: 0;
+  padding: 0 1px 1px 0;
+  list-style: none;
+}
+.nui-docs__icons > li { margin: 0 -1px -1px 0; border: 1px solid var(--nui-border-soft); }
+.nui-docs__icon {
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  gap: var(--nui-space-2);
+  width: 100%;
+  height: 100%;
+  min-height: 96px;
+  padding: var(--nui-space-4) var(--nui-space-2) var(--nui-space-3);
+  border: 0;
+  background: var(--nui-surface);
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  transition: background-color var(--nui-dur-fast) var(--nui-ease);
+}
+.nui-docs__icon:hover { background: var(--nui-surface-sunken); }
+.nui-docs__icon:focus-visible { outline: 2px solid var(--nui-focus-ring); outline-offset: -2px; }
+.nui-docs__icon-glyph { display: grid; place-items: center; width: 32px; height: 32px; }
+.nui-docs__icon-name { color: var(--nui-text-secondary); font-size: var(--nui-fs-label); text-align: center; overflow-wrap: anywhere; }
+.nui-docs__icon[data-copied] .nui-docs__icon-name { color: var(--nui-positive); font-weight: 600; }
+.nui-docs__icon-alias { color: var(--nui-text-muted); font-size: var(--nui-fs-micro); text-align: center; }

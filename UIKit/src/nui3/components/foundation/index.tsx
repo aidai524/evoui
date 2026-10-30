@@ -1,4 +1,5 @@
 import type { CSSProperties, ElementType, HTMLAttributes, ReactNode } from 'react'
+import { useNuiLocale } from '../../i18n'
 import { cx } from '../../utils/cx'
 
 type Poly<P> = P & Omit<HTMLAttributes<HTMLElement>, keyof P> & { as?: ElementType; children?: ReactNode }
@@ -68,5 +69,25 @@ export function Grid({ as: Tag = 'div', cols = 3, min, className, style, ...rest
       style={{ ...(cols === 'auto' && min ? { '--nui-min': min } : null), ...style } as CSSProperties}
       {...rest}
     />
+  )
+}
+
+export interface SpinnerProps extends Omit<HTMLAttributes<HTMLSpanElement>, 'children'> {
+  /** sm 12px (inline, Button loading) · md 16px · lg 24px. */
+  size?: 'sm' | 'md' | 'lg'
+  /** Announced text (role="status"); defaults to m.loading. `null` makes it decorative (aria-hidden). */
+  label?: string | null
+}
+
+/** Rotating ring on the shared `.nui-spinner` CSS. Announces `label` via role="status" unless label is null. */
+export function Spinner({ size = 'md', label, className, ...rest }: SpinnerProps) {
+  const { m } = useNuiLocale()
+  const text = label === undefined ? m.loading : label
+  const cls = cx('nui-spinner', size !== 'sm' && `nui-spinner--${size}`, className)
+  if (text === null) return <span className={cls} aria-hidden="true" {...rest} />
+  return (
+    <span className={cls} role="status" {...rest}>
+      <span className="nui-sr-only">{text}</span>
+    </span>
   )
 }

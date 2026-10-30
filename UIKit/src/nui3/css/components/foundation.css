@@ -39,6 +39,10 @@
     border-radius: var(--nui-radius-pill);
     animation: nui-spin 0.8s linear infinite;
   }
+  .nui-spinner--md { width: 16px; height: 16px; border-width: 2px; }
+  .nui-spinner--lg { width: 24px; height: 24px; border-width: 2px; }
+  /* SpinnerIcon (svg) */
+  .nui-icon-spin { flex: none; animation: nui-spin 0.8s linear infinite; }
 
   /* Focus ring baseline for anything nui-* that is focusable. */
   [class*="nui-"]:focus-visible {

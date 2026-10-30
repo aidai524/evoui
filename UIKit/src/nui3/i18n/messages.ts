@@ -111,6 +111,13 @@ export const en = {
   importCsv: 'Import CSV',
   noCsvRows: 'No payment rows found',
   chartEmpty: 'No data for this range',
+  loading: 'Loading',
+  insufficientBalance: 'Insufficient balance',
+  noBalance: 'No balance',
+  selectTokenFirst: 'Select a token to enter an amount',
+  ofBalance: 'of balance',
+  quickAmounts: 'Quick amounts',
+  unitPrice: 'Unit price',
 }
 
 export type Messages = typeof en
@@ -226,4 +233,11 @@ export const zh: Messages = {
   importCsv: '导入 CSV',
   noCsvRows: '未找到付款记录',
   chartEmpty: '该时间段没有数据',
+  loading: '加载中',
+  insufficientBalance: '余额不足',
+  noBalance: '无余额',
+  selectTokenFirst: '先选择代币再输入数量',
+  ofBalance: '的余额',
+  quickAmounts: '快捷数量',
+  unitPrice: '单价',
 }
