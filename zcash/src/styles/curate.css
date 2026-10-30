@@ -1,0 +1,22 @@
+/* Curate console — same tokens, scoped. */
+.curate .steps .step { grid-template-columns: 32px 1fr; }
+.curate .filter-chips .chip { padding: 10px 14px; }
+.curate .table td .btn-ghost { padding: 0 6px; }
+
+/* Boot + small-screen helpers */
+.boot {
+  display: grid;
+  place-items: center;
+  min-height: 100vh;
+}
+@media (max-width: 720px) {
+  .hide-sm { display: none; }
+  .topbar-inner { gap: var(--s-3); }
+  .nav-item { padding: 0 var(--s-2); font-size: 12px; }
+  .nav-item[aria-current="page"]::after { left: var(--s-2); right: var(--s-2); }
+  .brand { font-size: 15px; }
+  .wallet-chip .acct { display: none; }
+}
+@media (max-width: 480px) {
+  .brand > span:last-child { display: none; }
+}
