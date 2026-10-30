@@ -155,7 +155,6 @@
     font-family: var(--nui-font-sans);
     font-size: var(--nui-fs-small);
     line-height: var(--nui-lh-ui);
-    box-shadow: 0 12px 32px -12px color-mix(in srgb, var(--nui-color-black, #000) 28%, transparent);
     overscroll-behavior: contain;
     --nui-floating-dx: 0px;
     --nui-floating-dy: -6px;
