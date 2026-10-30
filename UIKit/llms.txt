@@ -13,7 +13,7 @@ Rules: spec/01-design-principles.md · Conventions: CONVENTIONS.md · Agent guid
 - theme: ThemeProvider
 - foundation: Display, Heading, Eyebrow, Lead, Shell, Section, Stack, Cluster, Grid, Icons (src/nui3/icons, *Icon), Spinner
 - actions: Button, IconButton, ChipGroup, Tabs, TabPanel, Segmented
-- forms: Field, Input, Textarea, Select, InputGroup, SearchInput, Switch, Checkbox, Slider, FileDrop
+- forms: Field, Input, Textarea, Select, InputGroup, SearchInput, Switch, Checkbox, Slider, FileDrop, Calendar, DatePicker, DateRangePicker
 - navigation: ZcashMark, Brand, Header, Breadcrumb, Footer, SubNav
 - surfaces: Card, ProjectCard, Panel, Stats, Stat, Badge, Alert, DataTable, KeyValue, Stepper, Progress, Skeleton, EmptyState
 - overlays: Dialog, Drawer, ToastProvider / useToast
@@ -32,5 +32,6 @@ Rules: spec/01-design-principles.md · Conventions: CONVENTIONS.md · Agent guid
 - addresses: parseAddress, isValidAddress, isShieldedAddress, addressKind, verifyBech32, truncateMiddle, ADDRESS_KIND_LABEL
 - memo / ZIP-321: MEMO_MAX_BYTES, memoByteLength, isMemoValid, truncateMemo, encodeMemoBase64Url, buildPaymentUri
 - CSV / batch: parseCsv, parsePaymentCsv, validatePayments
+- dates (ISO `YYYY-MM-DD`, zone-safe): parseISODate, toISODate, addDays, addMonths, monthMatrix, startOfWeek, weekStartForLocale, clampISODate, orderRange, isInRange, formatISODate, formatISODateRange, parseDateInput, todayISO, defaultDatePresets
 - misc: niceTicks, paginationRange, PRIVACY_LEVELS, DEFAULT_DISCLAIMER, cx
 - theme: contrastRatio, checkContrast, defineTheme, toCssVars
