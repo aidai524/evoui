@@ -9,6 +9,8 @@ export default defineConfig(({ mode }) => {
 
   return {
     plugins: [react()],
+    // Built site behind a Cloudflare quick tunnel (vite preview only; the dev server stays localhost-only).
+    preview: { allowedHosts: ['.trycloudflare.com'] },
     server: {
       proxy: {
         '/api': {
