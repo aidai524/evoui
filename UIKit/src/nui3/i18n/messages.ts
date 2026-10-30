@@ -111,6 +111,11 @@ export const en = {
   importCsv: 'Import CSV',
   noCsvRows: 'No payment rows found',
   chartEmpty: 'No data for this range',
+  selectPlaceholder: 'Select…',
+  searchPlaceholder: 'Search…',
+  clearSelection: 'Clear selection',
+  /** `{n}` is replaced with the count. */
+  nSelected: '{n} selected',
 }
 
 export type Messages = typeof en
@@ -226,4 +231,8 @@ export const zh: Messages = {
   importCsv: '导入 CSV',
   noCsvRows: '未找到付款记录',
   chartEmpty: '该时间段没有数据',
+  selectPlaceholder: '请选择…',
+  searchPlaceholder: '搜索…',
+  clearSelection: '清除选择',
+  nSelected: '已选 {n} 项',
 }

@@ -12,8 +12,8 @@ Rules: spec/01-design-principles.md · Conventions: CONVENTIONS.md · Agent guid
 ## Components (99)
 - theme: ThemeProvider
 - foundation: Display, Heading, Eyebrow, Lead, Shell, Section, Stack, Cluster, Grid
-- actions: Button, IconButton, ChipGroup, Tabs, TabPanel, Segmented
-- forms: Field, Input, Textarea, Select, InputGroup, SearchInput, Switch, Checkbox, Slider, FileDrop
+- actions: Button, IconButton, ChipGroup, Tabs, TabPanel, Segmented, Menu
+- forms: Field, Input, Textarea, Select (custom listbox), NativeSelect, InputGroup, SearchInput, Switch, Checkbox, Slider, FileDrop
 - navigation: ZcashMark, Brand, Header, Breadcrumb, Footer, SubNav
 - surfaces: Card, ProjectCard, Panel, Stats, Stat, Badge, Alert, DataTable, KeyValue, Stepper, Progress, Skeleton, EmptyState
 - overlays: Dialog, Drawer, ToastProvider / useToast

@@ -59,11 +59,14 @@ function InputDemo() {
         <Textarea placeholder="Optional encrypted memo" />
       </Field>
       <Field label="Pool">
-        <Select defaultValue="orchard">
-          <option value="orchard">Orchard</option>
-          <option value="sapling">Sapling</option>
-          <option value="transparent">Transparent</option>
-        </Select>
+        <Select
+          defaultValue="orchard"
+          options={[
+            { value: 'orchard', label: 'Orchard' },
+            { value: 'sapling', label: 'Sapling' },
+            { value: 'transparent', label: 'Transparent' },
+          ]}
+        />
       </Field>
     </Grid>
   )
@@ -214,7 +217,7 @@ const f = useFieldControl({ id, invalid })
     group: 'forms',
     className: 'nui-input',
     description:
-      'Text input, Textarea and native Select share one look: 48px, 1px border, 15px; focus turns the border to border-focus plus a 2px accent underline. mono is for addresses and hashes.',
+      'Text input, Textarea and Select (custom listbox or NativeSelect) share one look: 48px, 1px border, 15px; focus turns the border to border-focus plus a 2px accent underline. mono is for addresses and hashes.',
     Demo: InputDemo,
     usage: `<Field label="Address"><Input mono placeholder="u1…" /></Field>
 <Field label="Memo"><Textarea /></Field>
@@ -222,7 +225,7 @@ const f = useFieldControl({ id, invalid })
     props: [
       ['mono', 'boolean (Input / Textarea) — IBM Plex Mono 14px'],
       ['invalid', 'boolean — aria-invalid without a Field error'],
-      ['…rest', 'native input / textarea / select attributes'],
+      ['…rest', 'native input / textarea attributes'],
     ],
   },
   {
@@ -243,36 +246,6 @@ const f = useFieldControl({ id, invalid })
     usage: `<Field label="Notes"><Textarea rows={4} /></Field>`,
     props: [
       ['mono', 'boolean'],
-      ['invalid', 'boolean'],
-    ],
-  },
-  {
-    name: 'Select',
-    group: 'forms',
-    className: 'nui-select',
-    description: 'Native <select> with a two-line chevron (the only allowed gradient use). Pass options or <option> children.',
-    Demo: () => (
-      <Grid cols={3}>
-        <Field label="Network">
-          <Select options={['Mainnet', 'Testnet']} />
-        </Field>
-        <Field label="Currency" error="Pick a currency">
-          <Select defaultValue="">
-            <option value="" disabled>
-              Choose…
-            </option>
-            <option>USD</option>
-            <option>EUR</option>
-          </Select>
-        </Field>
-        <Field label="Disabled">
-          <Select options={['Orchard']} disabled />
-        </Field>
-      </Grid>
-    ),
-    usage: `<Field label="Network"><Select options={[{ value: 'main', label: 'Mainnet' }, 'Testnet']} /></Field>`,
-    props: [
-      ['options', "Array<string | { value, label?, disabled? }>"],
       ['invalid', 'boolean'],
     ],
   },

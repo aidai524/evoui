@@ -31,11 +31,38 @@ function mirrorScope(target: HTMLElement, from: Element | null | undefined) {
   target.style.cssText = scope && scope !== document.documentElement ? scope.style.cssText : ''
 }
 
+/**
+ * Where a floating layer anchored at `from` must be mounted to be visible: the nearest open modal
+ * `<dialog>` or open `[popover]` ancestor (both live in the browser's top layer, which paints above
+ * anything appended to <body> whatever its z-index), else <body>. Position: fixed children of a
+ * top-layer element still escape its overflow, so the panel is not clipped there either.
+ */
+export function floatingRoot(from: Element | null | undefined): HTMLElement {
+  let el: Element | null = from ?? null
+  while (el) {
+    if (el instanceof HTMLDialogElement && el.open) return el
+    if (el instanceof HTMLElement && el.hasAttribute('popover') && safeMatches(el, ':popover-open')) return el
+    el = el.parentElement
+  }
+  return document.body
+}
+
+function safeMatches(el: Element, selector: string) {
+  try {
+    return el.matches(selector)
+  } catch {
+    return false
+  }
+}
+
 export interface PortalProps {
   children: ReactNode
   /** Element whose theme scope the portal inherits (usually the trigger). */
   scope?: RefObject<Element | null>
-  /** Render target; defaults to a fresh `<div class="nui-portal">` on document.body. */
+  /**
+   * Render target; defaults to a fresh `<div class="nui-portal">` on <body> — or inside the open modal
+   * `<dialog>` / popover that contains `scope`, so the layer stays above the browser's top layer.
+   */
   container?: HTMLElement | null
 }
 
@@ -49,10 +76,11 @@ export function Portal({ children, scope, container }: PortalProps) {
     }
     const el = document.createElement('div')
     el.className = 'nui-portal'
-    document.body.appendChild(el)
+    // Resolved once per mount: floating panels mount on open, when any enclosing dialog is already shown.
+    floatingRoot(scope?.current).appendChild(el)
     setHost(el)
     return () => el.remove()
-  }, [container])
+  }, [container, scope])
   useLayoutEffect(() => {
     if (host && !container) mirrorScope(host, scope?.current)
   })

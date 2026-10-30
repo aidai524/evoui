@@ -70,18 +70,19 @@ export function Textarea({ mono, invalid, className, id, disabled, 'aria-describ
   )
 }
 
-/* ───────────────────────── Select ───────────────────────── */
+/* ───────────────────────── NativeSelect ───────────────────────── */
 
-export type SelectOption = string | { value: string; label?: ReactNode; disabled?: boolean }
+export type NativeSelectOption = string | { value: string; label?: ReactNode; disabled?: boolean }
 
-export interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
+export interface NativeSelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
   /** Shorthand for `<option>` children. */
-  options?: SelectOption[]
+  options?: NativeSelectOption[]
   invalid?: boolean
   ref?: Ref<HTMLSelectElement>
 }
 
-export function Select({ options, invalid, className, id, disabled, children, 'aria-describedby': db, 'aria-invalid': ai, ref, ...rest }: SelectProps) {
+/** Native `<select>` (OS picker on mobile, zero JS). Use `Select` when rows need icons, descriptions or search. */
+export function NativeSelect({ options, invalid, className, id, disabled, children, 'aria-describedby': db, 'aria-invalid': ai, ref, ...rest }: NativeSelectProps) {
   const f = useFieldControl({ id, invalid, 'aria-describedby': db, 'aria-invalid': ai })
   return (
     <select
