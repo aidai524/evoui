@@ -1,0 +1,45 @@
+/* Design tokens — Cyber-Brutalist, light theme. Zero radius, hairlines, flat. */
+:root {
+  --bg: #f8f8f8;
+  --surface: #ffffff;
+  --surface-2: #f4f3f7;
+  --ink: #0a0a0a;
+  --ink-2: #3a3a3a;
+  --ink-3: #8a8a8a;
+
+  --accent: #904ef0;
+  --accent-deep: #7c44c9;
+  --accent-bright: #b57cff;
+  --accent-soft: rgba(144, 78, 240, 0.18);
+
+  --lime: #e0fc5c;
+  --lime-panel: #f4fbd9;
+
+  --positive: #14804a;
+  --negative: #d3353d;
+  --caution: #b5790a;
+
+  --line: #e5e5e5;
+  --line-soft: #eaeaea;
+  --line-strong: #d4d0dc;
+
+  --s-1: 4px;
+  --s-2: 8px;
+  --s-3: 12px;
+  --s-4: 16px;
+  --s-6: 24px;
+  --s-8: 32px;
+  --s-12: 48px;
+
+  --radius: 0;
+  --shadow-overlay: 0 20px 48px rgba(10, 10, 10, 0.18);
+
+  --font-display: "Archivo Black", "Arial Black", sans-serif;
+  --font-body: "Archivo", system-ui, sans-serif;
+  --font-mono: "Space Mono", ui-monospace, "SF Mono", Menlo, monospace;
+
+  --content-max: 1180px;
+  --topbar-h: 60px;
+
+  color-scheme: light;
+}
