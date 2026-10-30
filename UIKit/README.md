@@ -7,7 +7,22 @@ npm install
 npm run dev      # docs site on http://localhost:5173 (regenerates tokens first)
 npm test         # utils, 23-pair contrast matrix for every theme, CSS rule checks
 npm run build    # tokens → type-check → production build
+npm run build:lib  # publishable package in dist-lib/ (@nui3/react): one ES module per file, per-group entries, d.ts, CSS
 ```
+
+### On-demand loading
+
+`dist-lib` is built with `preserveModules` and `sideEffects: ["**/*.css"]`, so bundlers keep only what you import
+(`import { Button } from '@nui3/react'` ≈ 10 KB vs ≈ 180 KB for the whole kit). Group entries are also available:
+`@nui3/react/actions`, `/forms`, `/overlays`, `/icons`, … CSS can be loaded per group too:
+`@nui3/react/css/tokens` + `css/components/foundation.css` + the group files you use.
+
+### Tailwind v4
+
+Import `@nui3/react/css/tailwind` instead of `css` (it includes it). Tokens become utilities that resolve to CSS
+variables (`bg-nui-surface`, `text-nui-text-muted`, `rounded-control`, `ease-nui-out` …) and the layer order puts
+utilities after the component layer, so `className` on any component wins. Re-theme a subtree with
+`className="[--nui-accent:#7c5cff]"`. See the Tailwind page in the docs.
 
 ## Layout
 
