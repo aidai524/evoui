@@ -1,6 +1,6 @@
-# evoui — TokenDeploy frontend
+# evoui — UNIZAT frontend
 
-Two complete, independently runnable variants of the TokenDeploy UI (NEAR token launch platform: plain mint or bonding curve, optional 4% tax mode that pays holders in wZEC).
+Two complete, independently runnable variants of the UNIZAT UI (NEAR token launch platform: plain mint or bonding curve, optional 4% tax mode that pays holders in wZEC).
 
 | Directory | Theme | Source branch |
 |---|---|---|

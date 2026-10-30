@@ -1,4 +1,4 @@
-# TokenDeploy frontend
+# UNIZAT frontend
 
 NEAR token launch platform — plain mint or pump.fun-style bonding curve, with optional **tax mode** (4% transfer tax: 3% to holders in wZEC, 1% platform).
 React 19 + Vite + TypeScript + near-api-js. Single page, no router: the top menu switches **Launch / Create / Curate**.

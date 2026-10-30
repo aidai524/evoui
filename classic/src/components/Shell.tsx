@@ -9,7 +9,7 @@ export type LaunchTab = 'launches' | 'curve' | 'commit' | 'claim' | 'allocation'
 export function Decor() {
   return (
     <div className="decor" aria-hidden="true">
-      <div className="decor-watermark">TOKENDEPLOY_ · BONDING CURVE · NEAR TESTNET</div>
+      <div className="decor-watermark">UNIZAT_ · BONDING CURVE · NEAR TESTNET</div>
       <span className="decor-cross tr">+</span>
       <span className="decor-cross bl">+</span>
       <span className="decor-scene">1/SCN_01</span>
@@ -28,10 +28,10 @@ export function Topbar({ section, onSection }: { section: Section; onSection: (s
   return (
     <header className="topbar">
       <div className="topbar-inner">
-        <button className="brand" onClick={() => onSection('launch')} aria-label="TokenDeploy home">
+        <button className="brand" onClick={() => onSection('launch')} aria-label="UNIZAT home">
           <span className="brand-yen">¥</span>
           <span>
-            TOKENDEPLOY<span className="cursor">_</span>
+            UNIZAT<span className="cursor">_</span>
           </span>
         </button>
         <nav className="nav" aria-label="Primary">
@@ -89,7 +89,7 @@ export function Footer() {
   return (
     <footer className="footer">
       <div className="footer-inner">
-        <span>¥ TOKENDEPLOY_ · factory {CONFIG.factory}</span>
+        <span>¥ UNIZAT_ · factory {CONFIG.factory}</span>
         <span>backend {backend.kind === 'fake' ? 'in-memory simulation' : CONFIG.rpcUrl.replace('https://', '')}</span>
         <span>wallet {mode}</span>
         <span>only aggregates are public — no attribution</span>
