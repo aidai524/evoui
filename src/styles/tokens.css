@@ -1,27 +1,78 @@
-/* Design tokens — Cyber-Brutalist, light theme. Zero radius, hairlines, flat. */
+/* Design tokens — Zcash-leaning variant: shielded dark, Zcash gold, warm paper ink.
+   Same zero-radius / hairline / flat brutalist structure as main; only the palette and voice change. */
 :root {
-  --bg: #f8f8f8;
-  --surface: #ffffff;
-  --surface-2: #f4f3f7;
-  --ink: #0a0a0a;
-  --ink-2: #3a3a3a;
-  --ink-3: #8a8a8a;
+  --bg: #0c0b09;
+  --surface: #14120e;
+  --surface-2: #1b1813;
+  --ink: #f5efe0;
+  --ink-2: #cdc5b1;
+  --ink-3: #8b836e;
 
-  --accent: #904ef0;
-  --accent-deep: #7c44c9;
-  --accent-bright: #b57cff;
-  --accent-soft: rgba(144, 78, 240, 0.18);
+  /* Zcash gold */
+  --accent: #f4b728;
+  --accent-deep: #c98d12;
+  --accent-bright: #ffd873;
+  --accent-soft: rgba(244, 183, 40, 0.28);
 
-  --lime: #e0fc5c;
-  --lime-panel: #f4fbd9;
+  /* "live / done" — pale shield gold so it reads apart from the accent */
+  --lime: #ffeaa6;
+  --lime-panel: #1d190f;
+  --lime-border: #ffeaa6;
+  --on-lime: #0c0b09;
 
-  --positive: #14804a;
-  --negative: #d3353d;
-  --caution: #b5790a;
+  --positive: #3fcf8c;
+  --negative: #ff6464;
+  --caution: #ff9d3c;
 
-  --line: #e5e5e5;
-  --line-soft: #eaeaea;
-  --line-strong: #d4d0dc;
+  --line: #2a261e;
+  --line-soft: #221f19;
+  --line-strong: #3b3529;
+  /* hard brutalist edges (inputs, buttons, chips, strips) — ink on main, dimmed gold-grey here */
+  --edge: #5c533f;
+
+  /* text on solid fills */
+  --on-accent: #0c0b09;
+  --on-positive: #06150d;
+  --on-negative: #1a0505;
+
+  /* primary button: gold fill, black type */
+  --btn-bg: var(--accent);
+  --btn-fg: var(--on-accent);
+  --btn-hover-bg: var(--accent-bright);
+  --btn-hover-fg: var(--on-accent);
+  --btn-disabled-bg: var(--surface-2);
+  --btn-disabled-fg: var(--ink-3);
+  --btn-disabled-border: var(--line-strong);
+
+  /* selected chip / segment */
+  --select-bg: var(--accent);
+  --select-fg: var(--on-accent);
+  --select-sub: rgba(12, 11, 9, 0.66);
+  --select-mark: var(--on-accent);
+
+  /* tax strip: shielded black band, gold highlight */
+  --strip-bg: #000000;
+  --strip-fg: var(--ink);
+  --strip-hl: var(--accent);
+  --strip-border: var(--accent);
+
+  --code-bg: #000000;
+  --code-fg: var(--accent);
+  --code-border: var(--line-strong);
+
+  --coord-key: var(--accent);
+  --card-hover: var(--accent);
+  --mark: rgba(244, 183, 40, 0.38);
+  --meter-complete-edge: rgba(0, 0, 0, 0.4);
+
+  --topbar-bg: rgba(12, 11, 9, 0.9);
+  --grid-line: rgba(244, 183, 40, 0.045);
+  --decor-watermark: rgba(244, 183, 40, 0.1);
+  --decor-cross: rgba(244, 183, 40, 0.28);
+  --decor-scene: rgba(244, 183, 40, 0.4);
+  --warning-bg: #22180a;
+  --error-bg: #241010;
+  --shimmer: rgba(255, 234, 166, 0.07);
 
   --s-1: 4px;
   --s-2: 8px;
@@ -32,7 +83,7 @@
   --s-12: 48px;
 
   --radius: 0;
-  --shadow-overlay: 0 20px 48px rgba(10, 10, 10, 0.18);
+  --shadow-overlay: 0 20px 48px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(244, 183, 40, 0.2);
 
   --font-display: "Archivo Black", "Arial Black", sans-serif;
   --font-body: "Archivo", system-ui, sans-serif;
@@ -41,5 +92,5 @@
   --content-max: 1180px;
   --topbar-h: 60px;
 
-  color-scheme: light;
+  color-scheme: dark;
 }

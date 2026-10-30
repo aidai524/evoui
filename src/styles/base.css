@@ -14,10 +14,10 @@ body,
 
 body {
   background-color: var(--bg);
-  /* 40px faint grid, 2% black */
+  /* 40px faint grid */
   background-image:
-    linear-gradient(rgba(0, 0, 0, 0.02) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0, 0, 0, 0.02) 1px, transparent 1px);
+    linear-gradient(var(--grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
   background-size: 40px 40px;
   color: var(--ink-2);
   font-family: var(--font-body);
@@ -71,8 +71,8 @@ code {
 }
 
 ::selection {
-  background: var(--lime);
-  color: var(--ink);
+  background: var(--accent);
+  color: var(--on-accent);
 }
 
 .sr-only {

@@ -9,10 +9,10 @@ export type LaunchTab = 'launches' | 'curve' | 'commit' | 'claim' | 'allocation'
 export function Decor() {
   return (
     <div className="decor" aria-hidden="true">
-      <div className="decor-watermark">TOKENDEPLOY_ · BONDING CURVE · NEAR TESTNET</div>
+      <div className="decor-watermark">TOKENDEPLOY_ · SHIELDED · EARN wZEC</div>
       <span className="decor-cross tr">+</span>
       <span className="decor-cross bl">+</span>
-      <span className="decor-scene">1/SCN_01</span>
+      <span className="decor-scene">Ƶ/SHD_01</span>
     </div>
   )
 }
@@ -29,7 +29,7 @@ export function Topbar({ section, onSection }: { section: Section; onSection: (s
     <header className="topbar">
       <div className="topbar-inner">
         <button className="brand" onClick={() => onSection('launch')} aria-label="TokenDeploy home">
-          <span className="brand-yen">¥</span>
+          <span className="brand-yen">Ƶ</span>
           <span>
             TOKENDEPLOY<span className="cursor">_</span>
           </span>
@@ -89,7 +89,7 @@ export function Footer() {
   return (
     <footer className="footer">
       <div className="footer-inner">
-        <span>¥ TOKENDEPLOY_ · factory {CONFIG.factory}</span>
+        <span>Ƶ TOKENDEPLOY_ · factory {CONFIG.factory}</span>
         <span>backend {backend.kind === 'fake' ? 'in-memory simulation' : CONFIG.rpcUrl.replace('https://', '')}</span>
         <span>wallet {mode}</span>
         <span>only aggregates are public — no attribution</span>

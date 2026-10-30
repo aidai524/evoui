@@ -1,8 +1,8 @@
 import { useMemo, useState } from 'react'
 import { PageHead } from '../../components/Shell'
 import { DataCell, Empty, ErrorCallout, Meter, Notice, Reading, SkeletonCard } from '../../components/ui'
-import { CONFIG } from '../../lib/config'
-import { compact, groupInt, shortAccount } from '../../lib/format'
+import { CONFIG, TAX } from '../../lib/config'
+import { bpsToPct, compact, groupInt, shortAccount } from '../../lib/format'
 import { useAsync } from '../../lib/hooks'
 import type { CurveView, TokenInfo } from '../../lib/types'
 import { useWallet } from '../../wallet/WalletProvider'
@@ -30,6 +30,7 @@ export function Launches({ onOpenCurve, onCreate }: { onOpenCurve: (t: TokenInfo
   }, [backend, pages, version])
 
   const tokens = list.data?.tokens
+  const taxCount = (tokens ?? []).filter((t) => t.tax_enabled).length
 
   // Curve views for every curve token, fetched in parallel; failures stay per-card.
   const curves = useAsync(async () => {
@@ -63,11 +64,22 @@ export function Launches({ onOpenCurve, onCreate }: { onOpenCurve: (t: TokenInfo
         eyebrow="LAUNCH / LAUNCHES"
         title={
           <>
-            Live <span className="accent">launches</span>
+            Launch <span className="accent">shielded</span>
           </>
         }
-        lede="Every token minted by the factory. Curve tokens trade on a bonding curve until units_sold reaches s, then graduate into a Ref Finance pool."
+        lede="Curve positions are booked to an id_commitment, never your account — only aggregates are public. Tax-mode tokens pay holders in wZEC."
       />
+
+      {taxCount > 0 && (
+        <div className="tax-strip zec-banner">
+          <span>
+            <span className="hl">HOLD → EARN {TAX.rewardSymbol.toUpperCase()}</span> — {taxCount} TAX-MODE {taxCount === 1 ? 'TOKEN' : 'TOKENS'} LIVE · {bpsToPct(TAX.holdersBps)} OF EVERY TRANSFER PAID TO HOLDERS
+          </span>
+          <button className="btn btn-primary btn-sm" onClick={() => { setFilter('tax'); setNotice(null) }}>
+            SHOW TAX TOKENS →
+          </button>
+        </div>
+      )}
 
       <div className="toolbar">
         <div className="filter-chips" role="group" aria-label="Filter tokens">
