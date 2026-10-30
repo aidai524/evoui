@@ -11,7 +11,8 @@
     "build": "tsc -b && vite build",
     "test": "vitest run",
     "lint": "oxlint",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "build:lib": "node scripts/build-lib.mjs"
   },
   "dependencies": {
     "@floating-ui/react-dom": "^2.1.9",

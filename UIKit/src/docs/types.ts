@@ -19,7 +19,7 @@ export type GroupId =
   | 'i18n'
 
 export const GROUPS: { id: GroupId; title: string; count: number }[] = [
-  { id: 'theme', title: 'Theme', count: 1 },
+  { id: 'theme', title: 'Theme', count: 2 },
   { id: 'foundation', title: 'Foundation', count: 9 },
   { id: 'actions', title: 'Actions', count: 6 },
   { id: 'forms', title: 'Forms', count: 10 },

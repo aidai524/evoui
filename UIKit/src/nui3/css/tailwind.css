@@ -1,0 +1,12 @@
+/* NUI3 + Tailwind v4 — import this INSTEAD of nui3.css (it includes it):
+     @import "@nui3/css/tailwind.css";
+   Layer order puts Tailwind utilities after the NUI3 component layer, so any utility on a component wins:
+     <Button className="rounded-pill px-10">  <Card className="bg-nui-surface-sunken">
+   Tailwind's preflight is left out on purpose: nui3 base.css is the reset. Add @source for your own files if
+   they live outside the project root. */
+@layer theme, base, nui3, components, utilities;
+
+@import "tailwindcss/theme.css" layer(theme);
+@import "./nui3.css";
+@import "tailwindcss/utilities.css" layer(utilities);
+@import "./tailwind-theme.css";
