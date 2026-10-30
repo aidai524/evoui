@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 import {
   Button,
   Cluster,
@@ -8,10 +8,10 @@ import {
   PrivacyBadge,
   Segmented,
   Stack,
+  Switch,
   SwapSwitch,
   TokenAmountInput,
   TokenPicker,
-  tryParseUnits,
 } from '../../nui3'
 import { TOKENS, type SampleToken } from '../sample'
 import type { ComponentDoc } from '../types'
@@ -21,38 +21,90 @@ const usd = (value: string, t?: SampleToken) => {
   return n ? `≈ ${formatFiat(n)}` : undefined
 }
 
+function Labelled({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <Stack gap={2}>
+      <p className="nui-text-small nui-text-muted">{title}</p>
+      {children}
+    </Stack>
+  )
+}
+
 function TokenAmountInputDemo() {
   const [value, setValue] = useState('1.25')
   const [token, setToken] = useState<SampleToken | null>(TOKENS[0])
+  const [recvValue, setRecvValue] = useState('')
+  const [recv, setRecv] = useState<SampleToken | null>(null)
+  const [overValue, setOverValue] = useState('3.5')
+  const [loading, setLoading] = useState(true)
+  const [ext, setExt] = useState<SampleToken>(TOKENS[2])
+  const [extValue, setExtValue] = useState('')
   const [open, setOpen] = useState(false)
-  const units = token ? tryParseUnits(value, token.decimals) : null
-  const over = !!token && units != null && units > token.balance
   return (
-    <Stack gap={5} style={{ maxWidth: 440 }}>
-      <TokenAmountInput
-        label="You pay"
-        aside={<PrivacyBadge level="shielded" />}
-        value={value}
-        onChange={setValue}
-        token={token}
-        onTokenClick={() => setOpen(true)}
-        balance={token?.balance}
-        onMax={setValue}
-        fiat={usd(value, token ?? undefined)}
-        invalid={over}
-      />
-      {over && <p className="nui-text-small" style={{ color: 'var(--nui-negative)' }}>Amount exceeds your balance.</p>}
-      <TokenAmountInput label="You receive" value="" token={null} onTokenClick={() => setOpen(true)} readOnly />
-      <TokenAmountInput label="Quote (read-only)" value="58.9032" token={TOKENS[2]} readOnly balance={TOKENS[2].balance} onMax={() => {}} />
+    <Stack gap={6} style={{ maxWidth: 440 }}>
+      <Labelled title="price → fiat, built-in token dropdown, 25 / 50 / 75 / Max">
+        <TokenAmountInput
+          label="You pay"
+          aside={<PrivacyBadge level="shielded" />}
+          value={value}
+          onChange={setValue}
+          token={token}
+          tokens={TOKENS}
+          popularTokens={['ZEC', 'USDC', 'NEAR']}
+          onTokenChange={(t) => {
+            setToken(t)
+            setValue('')
+          }}
+          price={token?.usd}
+          balance={token?.balance}
+          onMax={setValue}
+          percentages={[25, 50, 75, 100]}
+        />
+      </Labelled>
+      <Labelled title="Empty state: no token selected (amount disabled until one is picked); the unit price shows while the amount is empty">
+        <TokenAmountInput
+          label="You receive"
+          value={recvValue}
+          onChange={setRecvValue}
+          token={recv}
+          tokens={TOKENS}
+          disabledTokens={token ? [token.symbol] : []}
+          onTokenChange={setRecv}
+          price={recv?.usd}
+          priceChange={recv ? 2.14 : undefined}
+          balance={recv?.balance}
+          onMax={setRecvValue}
+        />
+      </Labelled>
+      <Labelled title="Insufficient balance (validateBalance, on by default)">
+        <TokenAmountInput label="Send" value={overValue} onChange={setOverValue} token={TOKENS[0]} price={TOKENS[0].usd} balance={TOKENS[0].balance} onMax={setOverValue} />
+      </Labelled>
+      <Labelled title="Zero balance: “No balance”, Max hidden">
+        <TokenAmountInput label="Deposit" value="" onChange={() => {}} token={TOKENS[4]} price={TOKENS[4].usd} balance={0n} onMax={() => {}} />
+      </Labelled>
+      <Labelled title="Loading balance and price">
+        <Switch label="loading" checked={loading} onChange={setLoading} />
+        <TokenAmountInput label="Withdraw" value="" onChange={() => {}} token={TOKENS[1]} price={TOKENS[1].usd} balance={TOKENS[1].balance} onMax={() => {}} loading={loading} />
+      </Labelled>
+      <Labelled title="External picker (onTokenClick → TokenPicker dialog) and read-only quote">
+        <TokenAmountInput
+          label="Bridge"
+          value={extValue}
+          onChange={setExtValue}
+          token={ext}
+          onTokenClick={() => setOpen(true)}
+          balance={ext.balance}
+          price={ext.usd}
+          onMax={setExtValue}
+        />
+        <TokenAmountInput label="Quote (read-only)" value="58.9032" token={TOKENS[2]} readOnly balance={TOKENS[2].balance} price={1} onMax={() => {}} />
+      </Labelled>
       <TokenPicker
         open={open}
         onClose={() => setOpen(false)}
         tokens={TOKENS}
-        selected={token?.symbol}
-        onSelect={(t) => {
-          setToken(TOKENS.find((x) => x.symbol === t.symbol) ?? null)
-          setOpen(false)
-        }}
+        selected={ext.symbol}
+        onSelect={(t) => setExt(TOKENS.find((x) => x.symbol === t.symbol) ?? TOKENS[2])}
       />
     </Stack>
   )
@@ -147,20 +199,42 @@ export const docs: ComponentDoc[] = [
     group: 'defi',
     className: 'nui-token-input',
     description:
-      'Amount + token selector in one group. value is the decimal string as typed; onChange receives sanitizeAmountInput output; onMax receives formatUnits(balance) (a string, never a bigint). Parse with parseUnits only on submit. Without a token the select uses the accent fill.',
+      'Amount + token selector in one group. value is the decimal string as typed; onChange receives sanitizeAmountInput output; onMax / percent picks receive formatUnits strings, never bigints. With `price` the fiat line is computed with exact decimal math (no floats). With `tokens` the token button opens a built-in searchable dropdown (↑/↓, Enter, Esc); without them onTokenClick opens your own picker. No token → accent "Select token" and a disabled amount; balance 0n → "No balance"; amounts above the balance are invalid ("Insufficient balance").',
     Demo: TokenAmountInputDemo,
-    usage: `const [value, setValue] = useState('')\n\n<TokenAmountInput\n  label="You pay"\n  value={value}\n  onChange={setValue}\n  token={zec}\n  onTokenClick={() => setPickerOpen(true)}\n  balance={zec.balance}\n  onMax={setValue}\n/>`,
+    usage: `const [value, setValue] = useState('')
+const [token, setToken] = useState<PickerToken | null>(null)
+
+<TokenAmountInput
+  label="You pay"
+  value={value}
+  onChange={setValue}
+  token={token}
+  tokens={tokens}            // built-in dropdown
+  onTokenChange={setToken}
+  price={47.12}              // → "≈ $58.90"
+  balance={token?.balance}
+  onMax={setValue}
+  percentages={[25, 50, 75, 100]}
+/>`,
     props: [
       ['value', 'string (decimal)'],
       ['onChange', '(sanitized: string) => void'],
-      ['token', '{ symbol, name?, decimals?, src? } | null'],
-      ['onTokenClick', '() => void'],
+      ['token', '{ symbol, name?, decimals?, src? } | null — null shows the empty state'],
+      ['tokens / onTokenChange', 'PickerToken[] / (token) => void — built-in dropdown'],
+      ['popularTokens / disabledTokens', 'string[] (symbols) for the dropdown'],
+      ['onTokenClick', '() => void — external picker when tokens is absent'],
       ['label', 'ReactNode'],
       ['aside', 'ReactNode — e.g. PrivacyBadge'],
-      ['fiat', 'ReactNode — "≈ $117.40"'],
-      ['balance', 'bigint (base units)'],
+      ['price / currency', "number | decimal string / ISO code = 'USD'"],
+      ['priceChange', 'number (percent) — shown with the unit price'],
+      ['fiat', 'ReactNode — overrides the computed line'],
+      ['balance', 'bigint (base units); 0n → "No balance"'],
       ['decimals', 'number = token.decimals ?? 8'],
       ['onMax', '(value: string) => void'],
+      ['percentages', 'number[] — e.g. [25, 50, 75, 100]; 100 is labelled Max'],
+      ['validateBalance', 'boolean = true — "Insufficient balance"'],
+      ['error', 'ReactNode — custom bottom-row error, implies invalid'],
+      ['loading', 'boolean — skeletons for balance and fiat'],
       ['readOnly / invalid / disabled', 'boolean'],
     ],
   },

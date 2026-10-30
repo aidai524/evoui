@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Badge, CodeBlock, Disclosure, Grid, Identicon, InfoTip, NFTCard, Pagination, SecretField, Stack, Timeline, Tooltip, Cluster, Button } from '../../nui3'
+import { Badge, CodeBlock, Disclosure, Grid, Identicon, InfoTip, NFTCard, Pagination, SecretField, Stack, Timeline, Tooltip, Cluster, Button, IconButton, CopyIcon } from '../../nui3'
 import { ADDR, TXID } from '../sample'
 import type { ComponentDoc } from '../types'
 
@@ -24,6 +24,68 @@ const NFTS = [
   { name: 'Viewing Key Study', collection: 'Proof Studies', price: '—', meta: 'Not listed' },
   { name: 'Sapling Root, long name that truncates on one line', collection: 'Shielded Garden', price: '0.85 ZEC', meta: 'Offer 0.7', badge: <Badge tone="warning" solid dot>Shielded</Badge> },
 ]
+
+function TooltipDemo() {
+  return (
+    <Stack gap={8}>
+      <Cluster gap={6}>
+        <Tooltip content="Fee paid to miners. Fixed by ZIP-317.">
+          <Button size="sm" variant="outline">
+            Hover or focus me
+          </Button>
+        </Tooltip>
+        <Tooltip content="Connect a wallet to send.">
+          <Button size="sm" variant="solid" disabled>
+            Send (disabled)
+          </Button>
+        </Tooltip>
+        <Tooltip content="Copy address" side="bottom" arrow>
+          <IconButton label="Copy address" title="" size="sm">
+            <CopyIcon />
+          </IconButton>
+        </Tooltip>
+        <span className="nui-text-small">
+          Health factor <InfoTip label="About health factor" content="Below 1.0 the position can be liquidated. Collateral price moves change it." />
+        </span>
+      </Cluster>
+      <Stack gap={3}>
+        <p className="nui-text-small nui-text-muted">Placements (with arrow). Move between them: after the first one the rest open instantly.</p>
+        <Cluster gap={3}>
+          {(['top', 'right', 'bottom', 'left'] as const).map((side) => (
+            <Tooltip key={side} side={side} arrow content={`Placed on the ${side}`}>
+              <Button size="sm" variant="ghost">
+                {side}
+              </Button>
+            </Tooltip>
+          ))}
+          <Tooltip side="bottom" align="start" arrow content="bottom · align start — the arrow keeps pointing at the trigger">
+            <Button size="sm" variant="ghost">
+              bottom-start
+            </Button>
+          </Tooltip>
+          <Tooltip side="top" align="end" arrow content="top · align end">
+            <Button size="sm" variant="ghost">
+              top-end
+            </Button>
+          </Tooltip>
+        </Cluster>
+      </Stack>
+      <div
+        data-demo="clip"
+        style={{ height: 56, overflow: 'hidden', border: '1px dashed var(--nui-border-strong)', padding: '16px', display: 'flex', alignItems: 'center', gap: 16 }}
+      >
+        <span className="nui-text-small nui-text-muted" style={{ whiteSpace: 'nowrap' }}>overflow: hidden</span>
+        <Tooltip content="Rendered in a portal on <body>: the clipping parent cannot cut it off, and it flips below when there is no room above.">
+          <Button size="sm" variant="outline">
+            Inside a clipped box
+          </Button>
+        </Tooltip>
+        <InfoTip label="Network fee" content="0.0001 ZEC, paid to miners." />
+      </div>
+      <p className="nui-text-small nui-text-muted">Keyboard: Tab onto a trigger to show its tooltip, Esc to hide it. Mouse-click focus does not open it.</p>
+    </Stack>
+  )
+}
 
 export const docs: ComponentDoc[] = [
   {
@@ -131,33 +193,21 @@ export function App() {
     name: 'Tooltip',
     group: 'content',
     className: 'nui-tooltip',
-    description: 'Inverse bubble on hover or focus-within, role="tooltip" wired via aria-describedby; Esc hides it.',
-    Demo: () => (
-      <Stack gap={8}>
-        <Cluster gap={6}>
-          <Tooltip content="Fee paid to miners. Fixed by ZIP-317.">
-            <Button size="sm" variant="outline">
-              Hover or focus me
-            </Button>
-          </Tooltip>
-          <Tooltip side="bottom" content="Bubble below the trigger.">
-            <Button size="sm" variant="outline">
-              Bottom
-            </Button>
-          </Tooltip>
-          <span className="nui-text-small">
-            Health factor{' '}
-            <InfoTip label="About health factor" content="Below 1.0 the position can be liquidated. Collateral price moves change it." />
-          </span>
-        </Cluster>
-        <p className="nui-text-small nui-text-muted">Press Esc while the bubble is visible to hide it.</p>
-      </Stack>
-    ),
+    description:
+      'Inverse bubble portaled to <body>, so overflow:hidden parents never clip it. Opens on hover after 120ms (instant while moving between tooltips) and on keyboard focus, not on mouse-click focus; tap toggles on touch; Esc or an outside press closes it. Flips and shifts to stay in the viewport. role="tooltip" is wired to the trigger with aria-describedby; disabled triggers are wrapped so they still get it.',
+    Demo: TooltipDemo,
     usage: `<Tooltip content="Fee paid to miners."><Button>Fee</Button></Tooltip>
+<Tooltip content="Copy address" side="right" arrow><IconButton label="Copy"><CopyIcon /></IconButton></Tooltip>
+<Tooltip content="Connect a wallet first"><Button disabled>Send</Button></Tooltip>
 <InfoTip label="About health factor" content="Below 1.0 the position can be liquidated." />`,
     props: [
       ['content', 'ReactNode'],
-      ['side', "'top' | 'bottom' = 'top'"],
+      ['side / placement', "'top' | 'bottom' | 'left' | 'right' = 'top' (auto flip + shift)"],
+      ['align', "'start' | 'center' | 'end' = 'center'"],
+      ['arrow', 'boolean = false'],
+      ['delay / closeDelay', 'number (ms) = 120 / 80'],
+      ['open / defaultOpen / onOpenChange', 'controlled or uncontrolled'],
+      ['disabled', 'boolean — never show'],
       ['children', 'trigger element (gets aria-describedby)'],
     ],
   },
@@ -165,7 +215,7 @@ export function App() {
     name: 'InfoTip',
     group: 'content',
     className: 'nui-infotip',
-    description: '15px round "i" button (serif 9px) that opens a Tooltip; cursor help. The label is required and becomes the aria-label.',
+    description: '15px round "i" button (serif 9px) that opens a Tooltip (portaled, keyboard + touch aware); cursor help. The label is required and becomes the aria-label.',
     Demo: () => (
       <span className="nui-text-small">
         Health factor <InfoTip label="About health factor" content="Below 1.0 the position can be liquidated. Collateral price moves change it." />
@@ -175,6 +225,7 @@ export function App() {
     props: [
       ['label', 'string — required aria-label'],
       ['content', 'ReactNode = label'],
+      ['side / align / arrow', 'passed to Tooltip'],
     ],
   },
   {

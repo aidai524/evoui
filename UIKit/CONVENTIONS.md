@@ -11,7 +11,7 @@ The spec in `spec/` is the source of truth (`01` hard rules > `03` contract > `0
 | Docs entries of group `<g>` | `src/docs/groups/<g>.docs.tsx` → `export const docs: ComponentDoc[]` (see `src/docs/types.ts`, example `foundation.docs.tsx`) |
 | Shared utils | `src/nui3/utils` (amount, address, memo, payments/csv/zip321, ticks, pagination, privacy, `cx`) |
 | i18n | `useNuiLocale()` from `src/nui3/i18n` → `{ m, locale, number, t }`; every UI string comes from `m.*` |
-| Icons | `src/nui3/icons` (Arrow, External, Copy, Check, Close, Search, Swap, Shield, Lock, Eye, EyeOff, Menu, Chevron, Globe) |
+| Icons | `src/nui3/icons` — the 03 §7 core set plus ~45 more (Info, Warning, Error, Success, Plus, Minus, Edit, Trash, Refresh, Settings, Chevron*/Arrow*, Wallet, Send, Receive, Spinner, …); browse them on the docs Icons page |
 | Tokens | generated `src/nui3/css/tokens.css`; never edit, never hard-code values |
 
 Import inside the kit with relative paths (`../../utils/cx`, `../actions`). Docs files import from `../../nui3`.
