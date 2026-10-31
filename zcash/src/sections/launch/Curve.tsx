@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { PageHead } from '../../components/Shell'
-import { DataCell, Empty, ErrorCallout, Field, Meter, Notice, Panel, Reading, TxNotice } from '../../components/ui'
+import { DataCell, Empty, ErrorCallout, Field, Meter, Notice, Panel, Reading, Tween, TxNotice } from '../../components/ui'
 import { CONFIG, nearblocks, SELL_FEE_BPS, TAX } from '../../lib/config'
 import { bpsToPct, fromAtoms, groupInt, shortAccount, shortHex, toAtoms } from '../../lib/format'
 import { useAsync } from '../../lib/hooks'
@@ -170,9 +170,11 @@ function CurveOverview({ token, c }: { token: TokenInfo; c: CurveView }) {
       <div>
         <div className="row between" style={{ marginBottom: 8 }}>
           <span className="data-label">Graduation progress</span>
-          <span className="tiny">{(st.progress * 100).toFixed(2)}%</span>
+          <span className="tiny">
+            <Tween value={st.progress * 100} format={(n) => `${n.toFixed(2)}%`} />
+          </span>
         </div>
-        <Meter value={st.progress} size="lg" label="Graduation progress" />
+        <Meter value={st.progress} size="lg" label="Graduation progress" live={c.status === 'TRADING'} />
         <div className="meter-legend">
           <span>sell out s = {groupInt(c.s)} units to graduate and migrate to a pool</span>
           <span>reserve {groupInt(c.reserve_units)} → pool</span>

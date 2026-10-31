@@ -1,6 +1,6 @@
-import { useMemo, useState, type ReactNode } from 'react'
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { PageHead } from '../../components/Shell'
-import { Badge, Empty, ErrorCallout, Meter, Notice, Reading, SkeletonCard } from '../../components/ui'
+import { Badge, Empty, ErrorCallout, Meter, Notice, Reading, SkeletonCard, Tween } from '../../components/ui'
 import { CONFIG, TAX } from '../../lib/config'
 import { age, amountShort, bpsToPct, compact, signedPct } from '../../lib/format'
 import { useAsync } from '../../lib/hooks'
@@ -265,7 +265,7 @@ function FeaturedCard({ pick, pattern, data, onOpen }: { pick: Pick; pattern: nu
         {token.tax_enabled && <EarnTag />}
         <Progress token={token} curve={data.curve} />
         <div className="metric-row">
-          <Metric label="MCap" strong value={s ? `${amountShort(s.mcap, CONFIG.payment.decimals)} ${CONFIG.payment.symbol}` : data.curve === undefined ? '…' : null} />
+          <Metric label="MCap" strong value={s ? <Tween value={Number(s.mcap)} format={mcapText} /> : data.curve === undefined ? '…' : null} />
           <Metric label="Vol 24h" value={statValue(data.stats, (x) => x.volume_24h && `${amountShort(x.volume_24h, CONFIG.payment.decimals)} ${CONFIG.payment.symbol}`)} />
           <Metric label="Holders" value={statValue(data.stats, (x) => x.holders?.toLocaleString('en-US'))} />
         </div>
@@ -313,7 +313,7 @@ function TokenCard({ token, data, onOpen }: { token: TokenInfo; data: CardData; 
         {plain ? (
           <Metric label="Supply" strong value={compact(token.total_supply, token.decimals)} />
         ) : (
-          <Metric label="MCap" strong value={s ? `${amountShort(s.mcap, CONFIG.payment.decimals)} ${CONFIG.payment.symbol}` : data.curve === undefined ? '…' : null} />
+          <Metric label="MCap" strong value={s ? <Tween value={Number(s.mcap)} format={mcapText} /> : data.curve === undefined ? '…' : null} />
         )}
         {!plain && status !== 'GRADUATED' && <Metric label="Vol 24h" value={statValue(data.stats, (x) => x.volume_24h && `${amountShort(x.volume_24h, CONFIG.payment.decimals)} ${CONFIG.payment.symbol}`)} />}
         <Metric label="Holders" value={statValue(data.stats, (x) => x.holders?.toLocaleString('en-US'))} />
@@ -338,14 +338,15 @@ function Progress({ token, curve }: { token: TokenInfo; curve: CurveView | null 
     )
   }
   const s = curveStats(curve)
-  const pct = Math.floor(s.progress * 100)
   return (
     <div className="progress-block">
       <div className="progress-head">
-        <span className="progress-pct">{pct}%</span>
+        <span className="progress-pct">
+          <Tween value={s.progress * 100} format={(n) => `${Math.floor(n)}%`} />
+        </span>
         <span className="progress-label">{curve.status === 'SOLD_OUT' ? 'sold out · awaiting graduation' : 'to graduation'}</span>
       </div>
-      <Meter value={s.progress} label={`${token.symbol} graduation progress`} />
+      <Meter value={s.progress} label={`${token.symbol} graduation progress`} live={curve.status === 'TRADING'} />
     </div>
   )
 }
@@ -360,6 +361,9 @@ function Metric({ label, value, strong }: { label: string; value: ReactNode | nu
   )
 }
 
+/** Market cap from (tweened) payment atoms. */
+const mcapText = (atoms: number) => `${amountShort(BigInt(Math.round(atoms)), CONFIG.payment.decimals)} ${CONFIG.payment.symbol}`
+
 /** '…' while loading, null (hidden) when the backend has no value. */
 function statValue(stats: MarketStats | null | undefined, pick: (s: MarketStats) => string | null | undefined): string | null {
   if (stats === undefined) return '…'
@@ -368,11 +372,18 @@ function statValue(stats: MarketStats | null | undefined, pick: (s: MarketStats)
 }
 
 function Change({ bps }: { bps: number | null | undefined }) {
+  // A refresh that moves the value flashes it once (not on first render).
+  const prev = useRef(bps)
+  const [flashes, setFlashes] = useState(0)
+  useEffect(() => {
+    if (prev.current != null && bps != null && bps !== prev.current) setFlashes((n) => n + 1)
+    prev.current = bps
+  }, [bps])
   if (bps == null) return null
   const dir = bps > 0 ? 'up' : bps < 0 ? 'down' : 'flat'
   return (
-    <span className={`change change--${dir}`} title="Spot price change, 24h">
-      {signedPct(bps)}
+    <span key={flashes} className={`change change--${dir} ${flashes ? 'change--flash' : ''}`} title="Spot price change, 24h">
+      <Tween value={bps} format={(n) => signedPct(Math.round(n))} />
       <span className="change-span">24h</span>
     </span>
   )

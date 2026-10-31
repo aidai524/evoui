@@ -1,6 +1,7 @@
-import type { ReactNode } from 'react'
+import type { CSSProperties, ReactNode } from 'react'
 import { nearblocks } from '../lib/config'
 import { shortHex } from '../lib/format'
+import { useTween } from '../lib/hooks'
 import type { TxResult } from '../lib/types'
 
 export function Eyebrow({ children }: { children: ReactNode }) {
@@ -29,12 +30,31 @@ export function Badge({ tone = 'neutral', children, title }: { tone?: Tone; chil
   )
 }
 
-export function Meter({ value, label, size }: { value: number; label: string; size?: 'lg' }) {
+/** A number that counts to its new value (from 0 on mount), shown through `format`. */
+export function Tween({ value, format }: { value: number; format: (n: number) => string }) {
+  return <>{format(useTween(value))}</>
+}
+
+/** Particle drift (px) and delay (s) for the live meter head; fixed so every bar sparks the same way. */
+const SPARKS = [
+  [24, -12, 0],
+  [34, 5, 0.25],
+  [18, 11, 0.5],
+  [40, -4, 0.75],
+  [26, -16, 1],
+  [20, 14, 1.25],
+  [36, 9, 1.5],
+  [30, -9, 1.75],
+] as const
+
+/** `live`: the fill grows in on mount and sparks drift off its leading edge (an open, trading curve). */
+export function Meter({ value, label, size, live }: { value: number; label: string; size?: 'lg'; live?: boolean }) {
   const pct = Math.max(0, Math.min(1, value))
   const full = pct >= 1
+  const sparking = live && pct > 0 && !full
   return (
     <div
-      className={`meter ${full ? 'meter-positive' : ''} ${size === 'lg' ? 'meter-lg' : ''}`}
+      className={`meter ${full ? 'meter-positive' : ''} ${size === 'lg' ? 'meter-lg' : ''} ${live ? 'meter-live' : ''}`}
       role="progressbar"
       aria-label={label}
       aria-valuemin={0}
@@ -42,6 +62,13 @@ export function Meter({ value, label, size }: { value: number; label: string; si
       aria-valuenow={Math.round(pct * 100)}
     >
       <div className="meter-fill" style={{ width: `${pct * 100}%` }} />
+      {sparking && (
+        <span className="meter-head" style={{ left: `${pct * 100}%` }} aria-hidden="true">
+          {SPARKS.map(([dx, dy, d], i) => (
+            <i key={i} style={{ '--dx': `${dx}px`, '--dy': `${dy}px`, animationDelay: `${0.9 + d}s` } as CSSProperties} />
+          ))}
+        </span>
+      )}
     </div>
   )
 }
