@@ -69,3 +69,33 @@ export function relTime(ms: number): string {
 export function clock(ms: number): string {
   return new Date(ms).toISOString().replace('T', ' ').slice(0, 16) + 'Z'
 }
+
+/** Age since a past timestamp: 45m, 20h, 3d, 5w. */
+export function age(ms: number, now = Date.now()): string {
+  const m = Math.max(0, Math.floor((now - ms) / 60000))
+  if (m < 60) return `${m}m`
+  const h = Math.floor(m / 60)
+  if (h < 48) return `${h}h`
+  const d = Math.floor(h / 24)
+  return d < 14 ? `${d}d` : `${Math.floor(d / 7)}w`
+}
+
+/** Signed percent from basis points: +12.4%, −3.1%, 0%. */
+export function signedPct(bps: number): string {
+  if (bps === 0) return '0%'
+  const v = Math.abs(bps) / 100
+  const txt = v >= 100 ? v.toFixed(0) : v.toFixed(1)
+  return `${bps > 0 ? '+' : '−'}${txt}%`
+}
+
+/** Display amount from atoms with precision that fits the size: 0.0042, 9.75, 147.4, 12.3K. */
+export function amountShort(atoms: bigint | string, decimals: number): string {
+  const n = Number(BigInt(atoms)) / 10 ** decimals
+  if (!Number.isFinite(n)) return '—'
+  const a = Math.abs(n)
+  if (a === 0) return '0'
+  if (a >= 1e4) return compact(atoms, decimals)
+  if (a >= 100) return n.toLocaleString('en-US', { maximumFractionDigits: 1 })
+  if (a >= 1) return n.toLocaleString('en-US', { maximumFractionDigits: 2 })
+  return n.toPrecision(2).replace(/0+$/, '')
+}

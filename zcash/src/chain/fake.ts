@@ -2,7 +2,7 @@
 // Mirrors the contract semantics the UI depends on (statuses, fees, tax, graduation, claim).
 
 import { CONFIG, SELL_FEE_BPS, TAX } from '../lib/config'
-import { costOf, proceedsOf, unitsFor, type CurveParams } from '../lib/curve'
+import { costOf, proceedsOf, spotPrice, unitsFor, type CurveParams } from '../lib/curve'
 import { randomHex } from '../lib/hooks'
 import type {
   CreateArgs,
@@ -11,6 +11,7 @@ import type {
   CurveView,
   FeeMode,
   LegacySale,
+  MarketStats,
   Position,
   Rewards,
   RewardEvent,
@@ -49,7 +50,14 @@ interface FakeToken {
   positions: Map<string, FakePos>
   /** Holder share of tax (payment atoms) waiting for the next bot run. */
   pendingHolderTax: bigint
+  createdAt: number
+  /** Curve fills, oldest first: spot price after the fill and payment atoms moved. */
+  trades: { at: number; price: bigint; volume: bigint }[]
+  /** Real ft balances (atoms) by account — plain tokens and claimed curve units. */
+  ftBalances: Map<string, bigint>
 }
+
+const DAY = 86400_000
 
 const wait = (ms = BLOCK) => new Promise((r) => setTimeout(r, ms * (0.6 + Math.random() * 0.8)))
 const fakeHash = () => {
@@ -137,6 +145,51 @@ export class FakeBackend implements Backend {
     }
   }
 
+  async getMarketStats(tokens: TokenInfo[]): Promise<Record<string, MarketStats>> {
+    await wait(350)
+    const now = Date.now()
+    const out: Record<string, MarketStats> = {}
+    for (const info of tokens) {
+      const t = this.tokens.find((x) => x.info.token_account === info.token_account)
+      if (!t) continue
+      const ftHolders = [...t.ftBalances.values()].filter((v) => v > 0n).length
+      if (!t.curve) {
+        out[info.token_account] = { created_at: t.createdAt, holders: ftHolders, volume_24h: null, change_24h_bps: null }
+        continue
+      }
+      const c = t.curve
+      const curveHolders = [...t.positions.values()].filter((p) => p.units > p.claimed).length
+      // After graduation trading moves to the pool; the curve has no live market data.
+      const live = c.status !== 'GRADUATED'
+      const since = now - DAY
+      const volume = t.trades.filter((x) => x.at >= since).reduce((a, x) => a + x.volume, 0n)
+      const before = [...t.trades].reverse().find((x) => x.at < since)
+      const then = before ? before.price : c.p0
+      const nowPrice = spotPrice(c, c.sold)
+      out[info.token_account] = {
+        created_at: t.createdAt,
+        holders: curveHolders + ftHolders,
+        volume_24h: live ? volume.toString() : null,
+        change_24h_bps: live && then > 0n ? Number(((nowPrice - then) * 10000n) / then) : null,
+      }
+    }
+    return out
+  }
+
+  async getHoldings(accountId: string, idCommitment: string, tokens: TokenInfo[]): Promise<Record<string, string>> {
+    await wait(300)
+    const out: Record<string, string> = {}
+    for (const info of tokens) {
+      const t = this.tokens.find((x) => x.info.token_account === info.token_account)
+      if (!t) continue
+      const p = t.positions.get(idCommitment)
+      const open = p ? p.units - p.claimed : 0n
+      const atoms = open * 10n ** BigInt(info.decimals) + (t.ftBalances.get(accountId) ?? 0n)
+      if (atoms > 0n) out[info.token_account] = atoms.toString()
+    }
+    return out
+  }
+
   // ───────────────── writes
 
   async createToken(signer: SignerCtx, args: CreateArgs, deposit: bigint): Promise<CreateResult> {
@@ -177,8 +230,11 @@ export class FakeBackend implements Backend {
       },
       positions: new Map(),
       pendingHolderTax: 0n,
+      createdAt: Date.now(),
+      trades: [],
+      // Plain mint: 100% of supply to the creator.
+      ftBalances: new Map(args.use_curve ? [] : [[signer.accountId, BigInt(args.total_supply)]]),
     })
-    void signer
     return { hash: fakeHash(), token_account: tokenAccount, curve_account: curveAccount }
   }
 
@@ -204,6 +260,7 @@ export class FakeBackend implements Backend {
     if (c.sold === c.s) c.status = 'SOLD_OUT'
     this.addTax(t, tax)
     this.credit(t, idCommitment, units, signer.accountId)
+    t.trades.push({ at: Date.now(), price: spotPrice(c, c.sold), volume: cost })
 
     const parts = [`Bought ${units} units for ${fmtPay(cost)}`]
     if (tax > 0n) parts.push(`tax ${fmtPay(tax)}`)
@@ -227,6 +284,7 @@ export class FakeBackend implements Backend {
     c.poolReserve -= proceeds
     if (isTax) this.addTax(t, fee)
     this.balances.set(signer.accountId, (this.balances.get(signer.accountId) ?? 0n) + proceeds - fee)
+    t.trades.push({ at: Date.now(), price: spotPrice(c, c.sold), volume: proceeds })
     return { hash: fakeHash(), detail: `Sold ${units} units for ${fmtPay(proceeds - fee)} (fee ${fmtPay(fee)})` }
   }
 
@@ -238,7 +296,8 @@ export class FakeBackend implements Backend {
     const open = p ? p.units - p.claimed : 0n
     if (!p || open === 0n) throw new ChainError('NOTHING', 'Nothing to claim for this id_commitment.')
     p.claimed = p.units
-    void signer
+    const atoms = open * 10n ** BigInt(t.info.decimals)
+    t.ftBalances.set(signer.accountId, (t.ftBalances.get(signer.accountId) ?? 0n) + atoms)
     return { hash: fakeHash(), detail: `Claimed ${open} ${t.info.symbol} to ${signer.accountId}` }
   }
 
@@ -376,7 +435,10 @@ export class FakeBackend implements Backend {
       Tax: { total_bps: TAX.totalBps, holders_bps: TAX.holdersBps, platform_bps: TAX.platformBps, reward_asset: TAX.rewardAsset },
     }
     const feeMode: FeeMode = { SellFee: { bps: SELL_FEE_BPS } }
+    // Demo tokens with cover art in public/covers/<symbol>.jpg.
+    const covers = new Set(['NEBULAE69M', 'KRILL', 'MOSSDAO', 'ORBITCAT', 'GLYPH'])
 
+    const now = Date.now()
     const mk = (o: {
       symbol: string
       name: string
@@ -384,29 +446,43 @@ export class FakeBackend implements Backend {
       total: bigint
       curve?: { s: bigint; p0: number; p1: number; soldPct: number }
       tax?: boolean
+      /** Demo identity's curve units. */
       mine?: bigint
       status?: CurveStatus
+      ageHours: number
+      /** Distinct anonymous commitments (curve) or accounts (plain) holding the token. */
+      holders: number
+      /** Fraction of s sold back to the curve in the last few hours (shows a red 24h change). */
+      dump?: number
+      /** Plain token: whole units the demo account holds. */
+      mineFt?: bigint
     }) => {
       const decimals = o.decimals ?? 8
+      const scale = 10n ** BigInt(decimals)
       const tokenAccount = `${o.symbol.toLowerCase()}.${CONFIG.factory}`
       const curveAccount = o.curve ? `curve.${tokenAccount}` : null
+      const createdAt = now - o.ageHours * 3600_000
       const t: FakeToken = {
         info: {
           symbol: o.symbol,
           name: o.name,
           decimals,
-          total_supply: (o.total * 10n ** BigInt(decimals)).toString(),
+          total_supply: (o.total * scale).toString(),
           token_account: tokenAccount,
           curve_account: curveAccount,
           tax_enabled: !!o.tax,
           reward_asset: o.tax ? TAX.rewardAsset : null,
           icon: null,
+          cover: covers.has(o.symbol) ? `${import.meta.env.BASE_URL}covers/${o.symbol.toLowerCase()}.jpg` : null,
           reference: null,
         },
         feeMode: o.tax ? taxMode : feeMode,
         curve: null,
         positions: new Map(),
         pendingHolderTax: 0n,
+        createdAt,
+        trades: [],
+        ftBalances: new Map(),
       }
       if (o.curve) {
         const c: FakeCurve = {
@@ -422,21 +498,50 @@ export class FakeBackend implements Backend {
         }
         const target = (o.curve.s * BigInt(Math.round(o.curve.soldPct * 1000))) / 1000n
         const mine = o.mine ?? 0n
-        // Spread the rest over a handful of anonymous commitments.
+        // Split the rest over `holders − 1` anonymous commitments, with uneven sizes, at times spread
+        // between creation and now (the newest fills land inside the 24h window).
+        const others = Math.max(1, o.holders - (mine > 0n ? 1 : 0))
+        const fills = others + (mine > 0n ? 1 : 0)
+        const weights = Array.from({ length: others }, (_, i) => 1 + ((i * 37) % 11))
+        const wsum = BigInt(weights.reduce((a, w) => a + w, 0))
+        const span = now - createdAt
         let remaining = target - mine
-        const others = 5
-        for (let i = 0; i < others && remaining > 0n; i++) {
-          const n = i === others - 1 ? remaining : remaining / BigInt(others - i) + BigInt(i * 7)
-          const take = n > remaining ? remaining : n
-          c.poolReserve += costOf(c, c.sold, take)
-          c.sold += take
-          t.positions.set(anon(), { units: take, claimed: 0n, owner: null })
-          remaining -= take
+        let k = 0
+        const fill = (who: string, units: bigint, owner: string | null) => {
+          if (units <= 0n) return
+          const cost = costOf(c, c.sold, units)
+          c.poolReserve += cost
+          c.sold += units
+          const p = t.positions.get(who) ?? { units: 0n, claimed: 0n, owner }
+          p.units += units
+          t.positions.set(who, p)
+          k++
+          t.trades.push({ at: createdAt + Math.floor((span * k) / (fills + 1)), price: spotPrice(c, c.sold), volume: cost })
         }
-        if (mine > 0n) {
-          c.poolReserve += costOf(c, c.sold, mine)
-          c.sold += mine
-          t.positions.set(me, { units: mine, claimed: 0n, owner: demoAccount })
+        const pool = remaining
+        for (let i = 0; i < others && remaining > 0n; i++) {
+          const take = i === others - 1 ? remaining : (pool * BigInt(weights[i])) / wsum
+          const n = take > remaining ? remaining : take
+          fill(anon(), n, null)
+          remaining -= n
+          // The demo identity bought about a third of the way in.
+          if (mine > 0n && i === Math.floor(others / 3)) fill(me, mine, demoAccount)
+        }
+        if (mine > 0n && !t.positions.has(me)) fill(me, mine, demoAccount)
+        if (o.dump) {
+          // A few recent sells from the largest anonymous holders.
+          let left = (o.curve.s * BigInt(Math.round(o.dump * 1000))) / 1000n
+          const sellers = [...t.positions.entries()].filter(([id]) => id !== me).sort((x, y) => (y[1].units > x[1].units ? 1 : -1))
+          for (let i = 0; i < sellers.length && left > 0n && i < 3; i++) {
+            const [, p] = sellers[i]
+            const n = left / BigInt(3 - i) > p.units ? p.units : left / BigInt(3 - i)
+            const proceeds = proceedsOf(c, c.sold, n)
+            p.units -= n
+            c.sold -= n
+            c.poolReserve -= proceeds
+            left -= n
+            t.trades.push({ at: now - (3 - i) * 50 * 60_000, price: spotPrice(c, c.sold), volume: proceeds })
+          }
         }
         if (c.sold === c.s) c.status = 'SOLD_OUT'
         t.curve = c
@@ -444,26 +549,37 @@ export class FakeBackend implements Backend {
           c.status = 'GRADUATED'
           c.migratedTo = o.tax ? 'dclv2.ref-dev.testnet' : 'ref-finance-101.testnet'
           c.poolId = 4127
-          c.injected = { payment: c.poolReserve, tokens: (o.total - c.s) * 10n ** BigInt(decimals) }
+          c.injected = { payment: c.poolReserve, tokens: (o.total - c.s) * scale }
         }
         if (o.tax) {
           // Some volume already taxed and waiting for the bot; plus a few past runs.
           t.pendingHolderTax = (c.poolReserve * 3n) / 100n
         }
+      } else {
+        // Plain mint: creator keeps most, a few accounts received transfers.
+        const creator = `${o.symbol.toLowerCase()}-deployer.testnet`
+        const mineFt = (o.mineFt ?? 0n) * scale
+        let rest = o.total * scale - mineFt
+        for (let i = 1; i < o.holders - (mineFt > 0n ? 1 : 0); i++) {
+          const n = rest / 40n
+          t.ftBalances.set(`holder${i}.testnet`, n)
+          rest -= n
+        }
+        if (mineFt > 0n) t.ftBalances.set(demoAccount, mineFt)
+        t.ftBalances.set(creator, rest)
       }
       this.tokens.push(t)
       return t
     }
 
-    mk({ symbol: 'NEBULAE69M', name: 'Nebulae 69M', total: 69_000_000n, curve: { s: 55_200_000n, p0: 0.0000004, p1: 0.0000032, soldPct: 0.62 }, tax: true, mine: 1_250_000n })
-    mk({ symbol: 'ORBITCAT', name: 'Orbit Cat', total: 1_000_000_000n, curve: { s: 800_000_000n, p0: 0.00000002, p1: 0.00000018, soldPct: 1 }, mine: 12_000_000n })
-    mk({ symbol: 'GLYPH', name: 'Glyph Protocol', total: 21_000_000n, curve: { s: 16_800_000n, p0: 0.000002, p1: 0.000016, soldPct: 1 }, tax: true, mine: 40_000n, status: 'GRADUATED' })
-    mk({ symbol: 'KRILL', name: 'Krill Swarm', total: 420_000_000n, curve: { s: 336_000_000n, p0: 0.00000005, p1: 0.0000004, soldPct: 0.08 }, tax: true })
-    mk({ symbol: 'PLAINUSD', name: 'Plain Test Dollar', decimals: 6, total: 10_000_000n })
-    mk({ symbol: 'MOSSDAO', name: 'Moss DAO', total: 5_000_000n, curve: { s: 4_000_000n, p0: 0.00001, p1: 0.00008, soldPct: 0.31 } })
+    mk({ symbol: 'NEBULAE69M', name: 'Nebulae 69M', total: 69_000_000n, curve: { s: 55_200_000n, p0: 0.0000004, p1: 0.0000032, soldPct: 0.62 }, tax: true, mine: 1_250_000n, ageHours: 74, holders: 142 })
+    mk({ symbol: 'ORBITCAT', name: 'Orbit Cat', total: 1_000_000_000n, curve: { s: 800_000_000n, p0: 0.00000002, p1: 0.00000018, soldPct: 1 }, mine: 12_000_000n, ageHours: 31, holders: 611 })
+    mk({ symbol: 'GLYPH', name: 'Glyph Protocol', total: 21_000_000n, curve: { s: 16_800_000n, p0: 0.000002, p1: 0.000016, soldPct: 1 }, tax: true, mine: 40_000n, status: 'GRADUATED', ageHours: 230, holders: 388 })
+    mk({ symbol: 'KRILL', name: 'Krill Swarm', total: 420_000_000n, curve: { s: 336_000_000n, p0: 0.00000005, p1: 0.0000004, soldPct: 0.08 }, tax: true, ageHours: 18, holders: 23 })
+    mk({ symbol: 'PLAINUSD', name: 'Plain Test Dollar', decimals: 6, total: 10_000_000n, ageHours: 290, holders: 9, mineFt: 2_500n })
+    mk({ symbol: 'MOSSDAO', name: 'Moss DAO', total: 5_000_000n, curve: { s: 4_000_000n, p0: 0.00001, p1: 0.00008, soldPct: 0.31 }, ageHours: 146, holders: 57, dump: 0.03 })
 
     // Past bot runs for the demo identity on tax tokens.
-    const now = Date.now()
     for (const sym of ['NEBULAE69M', 'GLYPH']) {
       const history: RewardEvent[] = []
       let total = 0n

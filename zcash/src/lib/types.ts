@@ -17,6 +17,19 @@ export interface TokenInfo {
   reward_asset: string | null
   icon: string | null
   reference: string | null
+  /** Optional wide cover image (from the reference metadata / an indexer). Generated art is used when absent. */
+  cover?: string | null
+}
+
+/** Market data for list views. Every field is optional: null = not known for this backend / token. */
+export interface MarketStats {
+  /** ms epoch the token was created. */
+  created_at: number | null
+  holders: number | null
+  /** Payment-token atoms traded on the curve in the last 24h. */
+  volume_24h: string | null
+  /** Spot-price change over 24h in basis points (signed). */
+  change_24h_bps: number | null
 }
 
 export type CurveStatus = 'TRADING' | 'SOLD_OUT' | 'GRADUATED'

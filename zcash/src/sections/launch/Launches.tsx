@@ -1,18 +1,30 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, type ReactNode } from 'react'
 import { PageHead } from '../../components/Shell'
-import { DataCell, Empty, ErrorCallout, Meter, Notice, Reading, SkeletonCard } from '../../components/ui'
+import { Badge, Empty, ErrorCallout, Meter, Notice, Reading, SkeletonCard } from '../../components/ui'
 import { CONFIG, TAX } from '../../lib/config'
-import { bpsToPct, compact, groupInt, shortAccount } from '../../lib/format'
+import { age, amountShort, bpsToPct, compact, signedPct } from '../../lib/format'
 import { useAsync } from '../../lib/hooks'
-import type { CurveView, TokenInfo } from '../../lib/types'
+import type { CurveView, MarketStats, TokenInfo } from '../../lib/types'
 import { useWallet } from '../../wallet/WalletProvider'
-import { curveStats, KindBadge, sig, StatusBadge, supplyLabel, TaxBadge, TokenIcon } from './tokenView'
+import { currentDecisions, curateApi } from '../curate/api'
+import { curveStats, TokenIcon } from './tokenView'
+import { artPattern, ART_PATTERNS, TokenArt } from './TokenArt'
 
 const PAGE = 12
+const FEATURED_MAX = 3
 type Filter = 'all' | 'curve' | 'token' | 'tax'
+type Pick = { token: TokenInfo; reason: 'CURATED' | 'TRENDING' }
+
+/** Per-card data assembled from the separate reads; `undefined` = still loading, `null` = not available. */
+interface CardData {
+  curve: CurveView | null | undefined
+  stats: MarketStats | null | undefined
+  /** Token atoms held by the connected identity; undefined when no wallet is connected. */
+  held: string | null | undefined
+}
 
 export function Launches({ onOpenCurve, onCreate }: { onOpenCurve: (t: TokenInfo) => void; onCreate: () => void }) {
-  const { backend, version } = useWallet()
+  const { backend, version, session } = useWallet()
   const [pages, setPages] = useState(1)
   const [filter, setFilter] = useState<Filter>('all')
   const [q, setQ] = useState('')
@@ -48,6 +60,64 @@ export function Launches({ onOpenCurve, onCreate }: { onOpenCurve: (t: TokenInfo
     return new Map<string, CurveView | null>(entries)
   }, [tokens])
 
+  // Market data is optional (indexer in testnet mode): a failure just hides the fields.
+  const stats = useAsync(
+    (): Promise<Record<string, MarketStats>> => (tokens ? backend.getMarketStats(tokens).catch(() => ({})) : Promise.resolve({})),
+    [tokens],
+  )
+
+  const holdings = useAsync(
+    (): Promise<Record<string, string> | null> =>
+      session && tokens ? backend.getHoldings(session.accountId, session.idCommitment, tokens).catch(() => ({})) : Promise.resolve(null),
+    [tokens, session?.idCommitment],
+  )
+
+  // Curator picks: applications with a current RECOMMEND in the decision ledger.
+  const curated = useAsync(async () => {
+    try {
+      const [apps, ledger] = await Promise.all([curateApi.applications(), curateApi.decisions()])
+      const current = currentDecisions(ledger)
+      return apps.filter((a) => current.get(a.id)?.decision === 'RECOMMEND').map((a) => a.symbol)
+    } catch {
+      return []
+    }
+  }, [])
+
+  const dataFor = (t: TokenInfo): CardData => ({
+    curve: t.curve_account ? (curves.data ? (curves.data.get(t.symbol) ?? null) : undefined) : null,
+    stats: stats.data ? (stats.data[t.token_account] ?? null) : undefined,
+    held: session ? (holdings.data ? (holdings.data[t.token_account] ?? null) : undefined) : undefined,
+  })
+
+  const picks = useMemo<Pick[]>(() => {
+    if (!tokens || !curves.data) return []
+    const live = (t: TokenInfo) => !!t.curve_account && curves.data!.get(t.symbol)?.status === 'TRADING'
+    const out: Pick[] = []
+    for (const sym of curated.data ?? []) {
+      const t = tokens.find((x) => x.symbol === sym)
+      if (t && live(t) && out.length < FEATURED_MAX) out.push({ token: t, reason: 'CURATED' })
+    }
+    // Fill with the most-traded live curves (24h volume, then graduation progress).
+    const vol = (t: TokenInfo) => BigInt(stats.data?.[t.token_account]?.volume_24h ?? '0')
+    const progress = (t: TokenInfo) => BigInt(curves.data!.get(t.symbol)?.units_sold ?? '0') * 10000n / BigInt(curves.data!.get(t.symbol)?.s || '1')
+    const rest = tokens
+      .filter((t) => live(t) && !out.some((p) => p.token.symbol === t.symbol))
+      .sort((a, b) => (vol(b) === vol(a) ? Number(progress(b) - progress(a)) : vol(b) > vol(a) ? 1 : -1))
+    for (const t of rest) if (out.length < FEATURED_MAX) out.push({ token: t, reason: 'TRENDING' })
+    return out
+  }, [tokens, curves.data, stats.data, curated.data])
+
+  // Generated covers side by side should not repeat: bump a clash to the next unused pattern.
+  const patterns = useMemo(() => {
+    const used: number[] = []
+    for (const p of picks) {
+      let k = artPattern(p.token.symbol)
+      while (used.includes(k) && used.length < ART_PATTERNS) k = (k + 1) % ART_PATTERNS
+      used.push(k)
+    }
+    return used
+  }, [picks])
+
   const shown = useMemo(() => {
     const needle = q.trim().toLowerCase()
     return (tokens ?? []).filter((t) => {
@@ -57,6 +127,13 @@ export function Launches({ onOpenCurve, onCreate }: { onOpenCurve: (t: TokenInfo
       return !needle || t.symbol.toLowerCase().includes(needle) || t.name.toLowerCase().includes(needle)
     })
   }, [tokens, filter, q])
+
+  const open = (t: TokenInfo) =>
+    t.curve_account
+      ? onOpenCurve(t)
+      : setNotice(`${t.symbol} is a plain token — fixed supply minted to the creator, no curve to trade here. Contract: ${t.token_account}.`)
+
+  const browsing = filter === 'all' && !q.trim()
 
   return (
     <div>
@@ -80,6 +157,24 @@ export function Launches({ onOpenCurve, onCreate }: { onOpenCurve: (t: TokenInfo
           </button>
         </div>
       )}
+
+      {browsing && picks.length > 0 && (
+        <section className="featured" aria-labelledby="featured-title">
+          <div className="section-bar">
+            <h2 id="featured-title" className="section-bar-title">
+              Featured
+            </h2>
+            <span className="section-bar-note">Curator picks, then the most-traded live curves</span>
+          </div>
+          <div className={`featured-grid n${picks.length}`}>
+            {picks.map((p, i) => (
+              <FeaturedCard key={p.token.token_account} pick={p} pattern={patterns[i]} data={dataFor(p.token)} onOpen={() => open(p.token)} />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {browsing && tokens && <h2 className="section-bar-title list-title">All tokens</h2>}
 
       <div className="toolbar">
         <div className="filter-chips" role="group" aria-label="Filter tokens">
@@ -126,17 +221,7 @@ export function Launches({ onOpenCurve, onCreate }: { onOpenCurve: (t: TokenInfo
       ) : (
         <div className="token-grid">
           {shown.map((t) => (
-            <TokenCard
-              key={t.token_account}
-              token={t}
-              curve={curves.data?.get(t.symbol)}
-              curveLoading={curves.loading && !curves.data}
-              onOpen={() =>
-                t.curve_account
-                  ? onOpenCurve(t)
-                  : setNotice(`${t.symbol} is a plain token — 100% minted to the creator, no curve. Metadata is read-only: ${t.token_account}.`)
-              }
-            />
+            <TokenCard key={t.token_account} token={t} data={dataFor(t)} onOpen={() => open(t)} />
           ))}
         </div>
       )}
@@ -152,62 +237,160 @@ export function Launches({ onOpenCurve, onCreate }: { onOpenCurve: (t: TokenInfo
   )
 }
 
-function TokenCard({ token, curve, curveLoading, onOpen }: { token: TokenInfo; curve: CurveView | null | undefined; curveLoading: boolean; onOpen: () => void }) {
-  const stats = curve ? curveStats(curve) : null
+// ───────────────── cards
+
+function FeaturedCard({ pick, pattern, data, onOpen }: { pick: Pick; pattern: number; data: CardData; onOpen: () => void }) {
+  const { token } = pick
+  const s = data.curve ? curveStats(data.curve) : null
   return (
-    <button className="token-card" onClick={onOpen} aria-label={`Open ${token.symbol}`}>
+    <button className="feature-card" onClick={onOpen} aria-label={`Open ${token.symbol}`}>
+      <div className="feature-media">
+        <TokenArt token={token} pattern={pattern} />
+        <div className="feature-tags">
+          <span className={`feature-reason ${pick.reason === 'CURATED' ? 'is-curated' : ''}`}>{pick.reason === 'CURATED' ? '★ Curator pick' : '↗ Trending'}</span>
+          {data.held && <HeldTag token={token} atoms={data.held} />}
+        </div>
+      </div>
+      <div className="feature-body">
+        <div className="feature-title">
+          <div style={{ minWidth: 0 }}>
+            <div className="token-symbol">{token.symbol}</div>
+            <div className="token-name">
+              {token.name}
+              {data.stats?.created_at != null && <> · {age(data.stats.created_at)}</>}
+            </div>
+          </div>
+          <Change bps={data.stats?.change_24h_bps} />
+        </div>
+        {token.tax_enabled && <EarnTag />}
+        <Progress token={token} curve={data.curve} />
+        <div className="metric-row">
+          <Metric label="MCap" strong value={s ? `${amountShort(s.mcap, CONFIG.payment.decimals)} ${CONFIG.payment.symbol}` : data.curve === undefined ? '…' : null} />
+          <Metric label="Vol 24h" value={statValue(data.stats, (x) => x.volume_24h && `${amountShort(x.volume_24h, CONFIG.payment.decimals)} ${CONFIG.payment.symbol}`)} />
+          <Metric label="Holders" value={statValue(data.stats, (x) => x.holders?.toLocaleString('en-US'))} />
+        </div>
+      </div>
+    </button>
+  )
+}
+
+function TokenCard({ token, data, onOpen }: { token: TokenInfo; data: CardData; onOpen: () => void }) {
+  const s = data.curve ? curveStats(data.curve) : null
+  const plain = !token.curve_account
+  const status = data.curve?.status
+  return (
+    <button className={`token-card ${plain ? 'token-card--plain' : ''}`} onClick={onOpen} aria-label={`Open ${token.symbol}`}>
       <div className="token-card-head">
         <div className="row" style={{ gap: 12, minWidth: 0, flexWrap: 'nowrap' }}>
           <TokenIcon token={token} />
           <div style={{ minWidth: 0 }}>
             <div className="token-symbol">{token.symbol}</div>
-            <div className="token-name">{token.name}</div>
-          </div>
-        </div>
-        <div className="badge-stack">
-          <KindBadge token={token} />
-          {token.tax_enabled && <TaxBadge />}
-        </div>
-      </div>
-
-      <div className="data-grid cols-2">
-        <DataCell label="Decimals" value={token.decimals} />
-        <DataCell label="Total supply" value={supplyLabel(token)} title={token.total_supply} />
-        {token.curve_account && (
-          <>
-            <DataCell label="Price / unit" value={stats ? sig(stats.price) : curveLoading ? '…' : '—'} sub={CONFIG.payment.symbol} title={stats?.price.toString()} />
-            <DataCell label="Market cap" value={stats ? compact(stats.mcap, CONFIG.payment.decimals) : curveLoading ? '…' : '—'} sub={CONFIG.payment.symbol} />
-          </>
-        )}
-      </div>
-
-      {token.curve_account &&
-        (curve ? (
-          <div>
-            <div className="row between" style={{ marginBottom: 6 }}>
-              <StatusBadge status={curve.status} />
-              <span className="tiny muted">
-                {Math.floor(stats!.progress * 100)}% TO GRADUATION
-              </span>
-            </div>
-            <Meter value={stats!.progress} label={`${token.symbol} graduation progress`} />
-            <div className="meter-legend">
-              <span>{groupInt(curve.units_sold)}</span>
-              <span>/ {groupInt(curve.s)} s</span>
+            <div className="token-name">
+              {token.name}
+              {data.stats?.created_at != null && <> · {age(data.stats.created_at)}</>}
             </div>
           </div>
-        ) : curve === null ? (
-          <span className="tiny" style={{ color: 'var(--negative)' }}>
-            ! CURVE VIEW UNAVAILABLE
-          </span>
+        </div>
+        <Change bps={data.stats?.change_24h_bps} />
+      </div>
+
+      {(token.tax_enabled || data.held || status === 'SOLD_OUT' || status === 'GRADUATED') && (
+        <div className="tag-row">
+          {token.tax_enabled && <EarnTag />}
+          {status === 'SOLD_OUT' && <Badge tone="accent">■ SOLD OUT</Badge>}
+          {status === 'GRADUATED' && <Badge tone="positive">● GRADUATED</Badge>}
+          {data.held && <HeldTag token={token} atoms={data.held} />}
+        </div>
+      )}
+
+      {plain ? (
+        <div className="plain-line">Fixed supply · no curve — not tradable here</div>
+      ) : (
+        <Progress token={token} curve={data.curve} />
+      )}
+
+      <div className="metric-row">
+        {plain ? (
+          <Metric label="Supply" strong value={compact(token.total_supply, token.decimals)} />
         ) : (
-          <div className="skeleton" style={{ height: 8 }} />
-        ))}
-
-      <div className="token-card-foot">
-        <span>{shortAccount(token.token_account, 28)}</span>
-        <span className="go">{token.curve_account ? 'TRADE →' : 'INFO'}</span>
+          <Metric label="MCap" strong value={s ? `${amountShort(s.mcap, CONFIG.payment.decimals)} ${CONFIG.payment.symbol}` : data.curve === undefined ? '…' : null} />
+        )}
+        {!plain && status !== 'GRADUATED' && <Metric label="Vol 24h" value={statValue(data.stats, (x) => x.volume_24h && `${amountShort(x.volume_24h, CONFIG.payment.decimals)} ${CONFIG.payment.symbol}`)} />}
+        <Metric label="Holders" value={statValue(data.stats, (x) => x.holders?.toLocaleString('en-US'))} />
+        <span className="card-go" aria-hidden="true">
+          →
+        </span>
       </div>
     </button>
+  )
+}
+
+// ───────────────── pieces
+
+function Progress({ token, curve }: { token: TokenInfo; curve: CurveView | null | undefined }) {
+  if (curve === undefined) return <div className="skeleton" style={{ height: 34 }} />
+  if (curve === null) return <span className="tiny" style={{ color: 'var(--negative)' }}>! CURVE VIEW UNAVAILABLE</span>
+  if (curve.status === 'GRADUATED') {
+    return (
+      <div className="graduated-line">
+        Trading on Ref{curve.pool_id != null ? ` · pool #${curve.pool_id}` : ''}
+      </div>
+    )
+  }
+  const s = curveStats(curve)
+  const pct = Math.floor(s.progress * 100)
+  return (
+    <div className="progress-block">
+      <div className="progress-head">
+        <span className="progress-pct">{pct}%</span>
+        <span className="progress-label">{curve.status === 'SOLD_OUT' ? 'sold out · awaiting graduation' : 'to graduation'}</span>
+      </div>
+      <Meter value={s.progress} label={`${token.symbol} graduation progress`} />
+    </div>
+  )
+}
+
+function Metric({ label, value, strong }: { label: string; value: ReactNode | null | undefined; strong?: boolean }) {
+  if (value == null || value === '') return null
+  return (
+    <div className={`metric ${strong ? 'metric--strong' : ''}`}>
+      <span className="metric-label">{label}</span>
+      <span className="metric-value">{value}</span>
+    </div>
+  )
+}
+
+/** '…' while loading, null (hidden) when the backend has no value. */
+function statValue(stats: MarketStats | null | undefined, pick: (s: MarketStats) => string | null | undefined): string | null {
+  if (stats === undefined) return '…'
+  if (stats === null) return null
+  return pick(stats) ?? null
+}
+
+function Change({ bps }: { bps: number | null | undefined }) {
+  if (bps == null) return null
+  const dir = bps > 0 ? 'up' : bps < 0 ? 'down' : 'flat'
+  return (
+    <span className={`change change--${dir}`} title="Spot price change, 24h">
+      {signedPct(bps)}
+      <span className="change-span">24h</span>
+    </span>
+  )
+}
+
+function EarnTag() {
+  return (
+    <span className="earn-tag" title={`${bpsToPct(TAX.totalBps)} transfer tax: ${bpsToPct(TAX.holdersBps)} to holders in ${TAX.rewardSymbol}, ${bpsToPct(TAX.platformBps)} platform`}>
+      <span className="earn-tag-main">Earn {TAX.rewardSymbol}</span>
+      <span className="earn-tag-cost">{bpsToPct(TAX.totalBps)} tax</span>
+    </span>
+  )
+}
+
+function HeldTag({ token, atoms }: { token: TokenInfo; atoms: string }) {
+  return (
+    <span className="held-tag" title={`This wallet holds ${compact(atoms, token.decimals)} ${token.symbol}`}>
+      You hold {compact(atoms, token.decimals)}
+    </span>
   )
 }

@@ -4,6 +4,7 @@ import type {
   CreateResult,
   CurveView,
   LegacySale,
+  MarketStats,
   Position,
   Rewards,
   TokenInfo,
@@ -28,6 +29,11 @@ export interface Backend {
   getPosition(curveAccount: string, idCommitment: string): Promise<Position>
   getPaymentBalance(accountId: string): Promise<bigint>
   getRewards(accountId: string, idCommitment: string, token: TokenInfo): Promise<Rewards>
+
+  // ── list-view data (keyed by token_account; tokens missing from the result have no data)
+  getMarketStats(tokens: TokenInfo[]): Promise<Record<string, MarketStats>>
+  /** Token atoms held by this identity: open curve units (id_commitment) + ft balance of the account. */
+  getHoldings(accountId: string, idCommitment: string, tokens: TokenInfo[]): Promise<Record<string, string>>
 
   // ── writes
   createToken(signer: SignerCtx, args: CreateArgs, deposit: bigint): Promise<CreateResult>

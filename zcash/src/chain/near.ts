@@ -14,10 +14,14 @@
 //   curve    graduate()  (idempotent: resumes an unfinished migration)
 //   payment  ft_transfer_call({ receiver_id: curve, amount, msg: '{"buy":{"id_commitment":…}}' })
 //   reward   ft_balance_of({ account_id })   (wZEC, zec.omft.near)
+//   token    ft_balance_of({ account_id })   (claimed curve units + plain-token balances)
+//
+// Market data (created_at, holders, 24h volume / change) is not on chain: it comes from the optional
+// VITE_NOIR_STATS_INDEXER; without it the list hides those fields.
 
 import { JsonRpcProvider, teraToGas } from 'near-api-js'
 import { CONFIG, TAX } from '../lib/config'
-import type { CreateArgs, CreateResult, CurveView, LegacySale, Position, Rewards, RewardEvent, TokenInfo, TxResult } from '../lib/types'
+import type { CreateArgs, CreateResult, CurveView, LegacySale, MarketStats, Position, Rewards, RewardEvent, TokenInfo, TxResult } from '../lib/types'
 import { ChainError, type Backend, type SignerCtx } from './backend'
 
 const GAS = teraToGas('300')
@@ -115,6 +119,41 @@ export class NearBackend implements Backend {
       share_bps: sold === 0n ? 0 : Number((units * 10000n) / sold),
       history,
     }
+  }
+
+  async getMarketStats(tokens: TokenInfo[]): Promise<Record<string, MarketStats>> {
+    if (!CONFIG.statsIndexer || tokens.length === 0) return {}
+    const url = `${CONFIG.statsIndexer}?tokens=${tokens.map((t) => encodeURIComponent(t.token_account)).join(',')}`
+    const r = await fetch(url)
+    if (!r.ok) throw new ChainError('INDEXER', `Stats indexer returned ${r.status}.`)
+    const rows = (await r.json()) as (Partial<MarketStats> & { token_account: string })[]
+    const out: Record<string, MarketStats> = {}
+    for (const row of rows) {
+      out[row.token_account] = {
+        created_at: row.created_at ?? null,
+        holders: row.holders ?? null,
+        volume_24h: row.volume_24h ?? null,
+        change_24h_bps: row.change_24h_bps ?? null,
+      }
+    }
+    return out
+  }
+
+  async getHoldings(accountId: string, idCommitment: string, tokens: TokenInfo[]): Promise<Record<string, string>> {
+    const out: Record<string, string> = {}
+    await Promise.all(
+      tokens.map(async (t) => {
+        // Per-token failures (e.g. a token without storage for this account) just mean "no holding".
+        const [ft, pos] = await Promise.all([
+          this.view<string>(t.token_account, 'ft_balance_of', { account_id: accountId }).catch(() => '0'),
+          t.curve_account ? this.getPosition(t.curve_account, idCommitment).catch(() => null) : Promise.resolve(null),
+        ])
+        const open = pos ? BigInt(pos.units) - BigInt(pos.claimed) : 0n
+        const atoms = BigInt(ft ?? '0') + open * 10n ** BigInt(t.decimals)
+        if (atoms > 0n) out[t.token_account] = atoms.toString()
+      }),
+    )
+    return out
   }
 
   async createToken(signer: SignerCtx, args: CreateArgs, deposit: bigint): Promise<CreateResult> {
