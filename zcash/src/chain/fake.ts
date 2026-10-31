@@ -435,7 +435,7 @@ export class FakeBackend implements Backend {
       Tax: { total_bps: TAX.totalBps, holders_bps: TAX.holdersBps, platform_bps: TAX.platformBps, reward_asset: TAX.rewardAsset },
     }
     const feeMode: FeeMode = { SellFee: { bps: SELL_FEE_BPS } }
-    // Demo tokens with cover art in public/covers/<symbol>.jpg.
+    // Demo tokens with cover art in public/covers/<symbol>.webp.
     const covers = new Set(['NEBULAE69M', 'KRILL', 'MOSSDAO', 'ORBITCAT', 'GLYPH'])
 
     const now = Date.now()
@@ -473,7 +473,7 @@ export class FakeBackend implements Backend {
           tax_enabled: !!o.tax,
           reward_asset: o.tax ? TAX.rewardAsset : null,
           icon: null,
-          cover: covers.has(o.symbol) ? `${import.meta.env.BASE_URL}covers/${o.symbol.toLowerCase()}.jpg` : null,
+          cover: covers.has(o.symbol) ? `${import.meta.env.BASE_URL}covers/${o.symbol.toLowerCase()}.webp` : null,
           reference: null,
         },
         feeMode: o.tax ? taxMode : feeMode,
