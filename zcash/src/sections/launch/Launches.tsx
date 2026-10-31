@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from 'react'
 import { PageHead } from '../../components/Shell'
 import { Badge, Empty, ErrorCallout, Meter, Notice, Reading, SkeletonCard, Tween } from '../../components/ui'
-import { CONFIG, TAX } from '../../lib/config'
+import { CONFIG, SELL_FEE_BPS, TAX } from '../../lib/config'
 import { age, amountShort, bpsToPct, compact, signedPct } from '../../lib/format'
 import { useAsync } from '../../lib/hooks'
 import type { CurveView, MarketStats, TokenInfo } from '../../lib/types'
@@ -265,7 +265,7 @@ function FeaturedCard({ order, pick, pattern, data, onOpen }: { order: number; p
           </div>
           <Change bps={data.stats?.change_24h_bps} />
         </div>
-        {token.tax_enabled && <EarnTag />}
+        {token.tax_enabled ? <EarnTag /> : <FeeTag />}
         <Progress token={token} curve={data.curve} />
         <div className="metric-row">
           <Metric label="MCap" strong value={s ? <Tween value={Number(s.mcap)} format={mcapText} /> : data.curve === undefined ? '…' : null} />
@@ -297,9 +297,9 @@ function TokenCard({ order, token, data, onOpen }: { order: number; token: Token
         <Change bps={data.stats?.change_24h_bps} />
       </div>
 
-      {(token.tax_enabled || data.held || status === 'SOLD_OUT' || status === 'GRADUATED') && (
+      {(!plain || data.held) && (
         <div className="tag-row">
-          {token.tax_enabled && <EarnTag />}
+          {token.tax_enabled ? <EarnTag /> : !plain && <FeeTag graduated={status === 'GRADUATED'} />}
           {status === 'SOLD_OUT' && <Badge tone="accent">■ SOLD OUT</Badge>}
           {status === 'GRADUATED' && <Badge tone="positive">● GRADUATED</Badge>}
           {data.held && <HeldTag token={token} atoms={data.held} />}
@@ -397,6 +397,16 @@ function EarnTag() {
     <span className="earn-tag" title={`${bpsToPct(TAX.totalBps)} transfer tax: ${bpsToPct(TAX.holdersBps)} to holders in ${TAX.rewardSymbol}, ${bpsToPct(TAX.platformBps)} platform`}>
       <span className="earn-tag-main">Earn {TAX.rewardSymbol}</span>
       <span className="earn-tag-cost">{bpsToPct(TAX.totalBps)} tax</span>
+    </span>
+  )
+}
+
+/** Fee model of a curve token without transfer tax (the counterpart of EarnTag); the sell fee ends with the curve. */
+function FeeTag({ graduated }: { graduated?: boolean }) {
+  return (
+    <span className="earn-tag fee-tag" title={graduated ? 'No transfer tax' : `No transfer tax; ${bpsToPct(SELL_FEE_BPS)} fee on curve sells`}>
+      <span className="earn-tag-main">No tax</span>
+      {!graduated && <span className="earn-tag-cost">{bpsToPct(SELL_FEE_BPS)} sell fee</span>}
     </span>
   )
 }

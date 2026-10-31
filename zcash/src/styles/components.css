@@ -848,6 +848,10 @@ textarea.input {
 .earn-tag { align-self: flex-start; border: 1px solid var(--accent); }
 .earn-tag-main { padding: 5px 8px; background: var(--accent); color: var(--on-accent); }
 .earn-tag-cost { padding: 5px 8px; color: var(--accent); }
+/* Base fee tag: same two-part shape as earn-tag, muted so the Earn tag stays the highlight */
+.fee-tag { border-color: var(--line-strong); }
+.fee-tag .earn-tag-main { background: var(--surface-2); color: var(--ink-2); }
+.fee-tag .earn-tag-cost { color: var(--ink-3); }
 .held-tag { padding: 5px 8px; border: 1px solid var(--lime-border); background: var(--lime); color: var(--on-lime); }
 
 .change {
