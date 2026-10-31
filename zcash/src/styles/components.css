@@ -570,8 +570,8 @@ textarea.input {
 .meter-early .meter-fill { background: linear-gradient(90deg, color-mix(in srgb, var(--accent-deep) 45%, var(--bg)), var(--accent-deep)); }
 .meter-building .meter-fill { background: linear-gradient(90deg, var(--accent-deep), var(--accent)); }
 .meter-final .meter-fill {
-  background: linear-gradient(90deg, var(--accent), var(--accent-bright) 70%, var(--lime));
-  box-shadow: 0 0 14px color-mix(in srgb, var(--accent) 55%, transparent);
+  background: linear-gradient(90deg, var(--accent), var(--hot) 55%, var(--hot-bright));
+  box-shadow: 0 0 14px color-mix(in srgb, var(--hot) 60%, transparent);
 }
 
 .meter-head {
@@ -608,8 +608,10 @@ textarea.input {
 }
 .meter-lg .meter-head::before { top: -12px; height: 24px; }
 .meter-lg .meter-head::after { top: -7px; height: 14px; }
-.meter-final .meter-head::before { left: -5px; width: 5px; background: var(--lime); }
-.meter-final .meter-head::after { background: linear-gradient(90deg, transparent, var(--lime)); }
+.meter-final .meter-head::before { left: -5px; width: 5px; background: var(--hot-bright); box-shadow: 0 0 calc(8px + var(--heat, 0) * 18px) calc(1px + var(--heat, 0) * 4px) var(--hot); }
+.meter-final .meter-head::after { background: linear-gradient(90deg, transparent, var(--hot-bright)); }
+.meter-final .meter-head i { background: var(--hot-bright); box-shadow: 0 0 8px 2px var(--hot); }
+.meter-final .meter-head i:nth-child(even) { background: var(--accent-bright); }
 
 /* Quarter marks notched into the track */
 .meter-ticks { position: absolute; inset: 0; pointer-events: none; }
@@ -943,7 +945,7 @@ textarea.input {
 .to-grad b { color: var(--ink); font-weight: 700; }
 .progress-label--early { color: var(--ink-3); }
 .progress-label--building { color: var(--ink-2); }
-.progress-label--final { color: var(--accent); }
+.progress-label--final { color: var(--hot); }
 .progress-label--awaiting { color: var(--lime); }
 .progress-block--awaiting .progress-pct { color: var(--lime); }
 .plain-line,

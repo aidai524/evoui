@@ -23,6 +23,9 @@
   --positive: #3fcf8c;
   --negative: #ff6464;
   --caution: #ff9d3c;
+  /* Final stretch of a curve (75%+): a flame orange set apart from the gold stages */
+  --hot: #ff6a1a;
+  --hot-bright: #ffa25c;
 
   --line: #2a261e;
   --line-soft: #221f19;
