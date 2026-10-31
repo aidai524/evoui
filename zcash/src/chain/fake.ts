@@ -572,7 +572,7 @@ export class FakeBackend implements Backend {
       return t
     }
 
-    mk({ symbol: 'NEBULAE69M', name: 'Nebulae 69M', total: 69_000_000n, curve: { s: 55_200_000n, p0: 0.0000004, p1: 0.0000032, soldPct: 0.62 }, tax: true, mine: 1_250_000n, ageHours: 74, holders: 142 })
+    mk({ symbol: 'NEBULAE69M', name: 'Nebulae 69M', total: 69_000_000n, curve: { s: 55_200_000n, p0: 0.0000004, p1: 0.0000032, soldPct: 0.82 }, tax: true, mine: 1_250_000n, ageHours: 74, holders: 142 })
     mk({ symbol: 'ORBITCAT', name: 'Orbit Cat', total: 1_000_000_000n, curve: { s: 800_000_000n, p0: 0.00000002, p1: 0.00000018, soldPct: 1 }, mine: 12_000_000n, ageHours: 31, holders: 611 })
     mk({ symbol: 'GLYPH', name: 'Glyph Protocol', total: 21_000_000n, curve: { s: 16_800_000n, p0: 0.000002, p1: 0.000016, soldPct: 1 }, tax: true, mine: 40_000n, status: 'GRADUATED', ageHours: 230, holders: 388 })
     mk({ symbol: 'KRILL', name: 'Krill Swarm', total: 420_000_000n, curve: { s: 336_000_000n, p0: 0.00000005, p1: 0.0000004, soldPct: 0.08 }, tax: true, ageHours: 18, holders: 23 })
