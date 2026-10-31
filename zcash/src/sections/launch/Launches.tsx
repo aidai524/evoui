@@ -343,18 +343,18 @@ function Progress({ token, curve }: { token: TokenInfo; curve: CurveView | null 
   const s = curveStats(curve)
   const stage = gradStage(s.progress)
   return (
-    <div className="progress-block">
+    <div className={`progress-block ${curve.status === 'SOLD_OUT' ? 'progress-block--awaiting' : ''}`}>
       <div className="progress-head">
         <span className="progress-pct">
           <Tween value={s.progress * 100} format={(n) => `${Math.floor(n)}%`} />
         </span>
         {curve.status === 'SOLD_OUT' ? (
-          <span className="progress-label">sold out · awaiting graduation</span>
+          <span className="progress-label progress-label--awaiting">■ sold out · awaiting graduation</span>
         ) : (
           <span className={`progress-label progress-label--${stage}`}>{GRAD_STAGES[stage]}</span>
         )}
       </div>
-      <Meter value={s.progress} label={`${token.symbol} graduation progress`} live={curve.status === 'TRADING'} ticks />
+      <Meter value={s.progress} label={`${token.symbol} graduation progress`} live={curve.status === 'TRADING'} stage={stage} awaiting={curve.status === 'SOLD_OUT'} ticks />
     </div>
   )
 }

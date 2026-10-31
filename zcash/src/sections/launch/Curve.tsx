@@ -175,10 +175,11 @@ function CurveOverview({ token, c }: { token: TokenInfo; c: CurveView }) {
           <span className="data-label">Graduation progress</span>
           <span className="tiny">
             {trading && <span className={`progress-label progress-label--${stage}`}>{GRAD_STAGES[stage]} · </span>}
+            {c.status === 'SOLD_OUT' && <span className="progress-label progress-label--awaiting">■ Awaiting graduation · </span>}
             <Tween value={st.progress * 100} format={(n) => `${n.toFixed(2)}%`} />
           </span>
         </div>
-        <Meter value={st.progress} size="lg" label="Graduation progress" live={trading} ticks />
+        <Meter value={st.progress} size="lg" label="Graduation progress" live={trading} stage={stage} awaiting={c.status === 'SOLD_OUT'} ticks />
         <div className="meter-legend">
           <span>sell out s = {groupInt(c.s)} units to graduate and migrate to a pool</span>
           <span>reserve {groupInt(c.reserve_units)} → pool</span>

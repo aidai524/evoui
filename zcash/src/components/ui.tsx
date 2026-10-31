@@ -45,6 +45,10 @@ const SPARKS = [
   [20, 14],
   [36, 9],
   [30, -9],
+  [44, -14],
+  [22, 3],
+  [38, 15],
+  [28, -20],
 ] as const
 
 /** Graduation burst: 14 sparks fanned out from the end of the bar. */
@@ -58,8 +62,18 @@ const BURST = Array.from({ length: 14 }, (_, i) => {
  * `live`: the fill grows in on mount and sparks drift off its leading edge (an open, trading curve).
  * The fuller the bar, the brighter the fill and the more and faster the sparks (`--heat` = fill).
  * A live meter that fills up while on screen bursts once. `ticks` marks the quarters on the track.
+ * `stage` colours the fill (see gradStage); `awaiting` marks a full bar still waiting on graduation.
  */
-export function Meter({ value, label, size, live, ticks }: { value: number; label: string; size?: 'lg'; live?: boolean; ticks?: boolean }) {
+export function Meter(props: {
+  value: number
+  label: string
+  size?: 'lg'
+  live?: boolean
+  ticks?: boolean
+  stage?: 'early' | 'building' | 'final'
+  awaiting?: boolean
+}) {
+  const { value, label, size, live, ticks, stage, awaiting } = props
   const pct = Math.max(0, Math.min(1, value))
   const full = pct >= 1
   const sparking = live && pct > 0 && !full
@@ -73,7 +87,7 @@ export function Meter({ value, label, size, live, ticks }: { value: number; labe
   }, [pct, live, full])
   return (
     <div
-      className={`meter ${full ? 'meter-positive' : ''} ${size === 'lg' ? 'meter-lg' : ''} ${live ? 'meter-live' : ''} ${live && pct >= 0.75 ? 'meter-hot' : ''} ${bursts ? 'meter-burst' : ''}`}
+      className={`meter ${full ? 'meter-positive' : ''} ${size === 'lg' ? 'meter-lg' : ''} ${live ? 'meter-live' : ''} ${live && stage ? `meter-${stage}` : ''} ${awaiting && full ? 'meter-awaiting' : ''} ${bursts ? 'meter-burst' : ''}`}
       style={live ? ({ '--heat': pct } as CSSProperties) : undefined}
       role="progressbar"
       aria-label={label}
