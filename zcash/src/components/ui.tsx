@@ -1,4 +1,4 @@
-import type { CSSProperties, ReactNode } from 'react'
+import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react'
 import { nearblocks } from '../lib/config'
 import { shortHex } from '../lib/format'
 import { useTween } from '../lib/hooks'
@@ -47,14 +47,30 @@ const SPARKS = [
   [30, -9, 1.75],
 ] as const
 
-/** `live`: the fill grows in on mount and sparks drift off its leading edge (an open, trading curve). */
+/** Graduation burst: 14 sparks fanned out from the end of the bar. */
+const BURST = Array.from({ length: 14 }, (_, i) => {
+  const a = -Math.PI / 2 + (Math.PI * i) / 13
+  const r = 30 + (i % 3) * 12
+  return [Math.round(Math.cos(a) * r), Math.round(Math.sin(a) * r)] as const
+})
+
+/**
+ * `live`: the fill grows in on mount and sparks drift off its leading edge (an open, trading curve).
+ * A live meter that fills up while on screen bursts once.
+ */
 export function Meter({ value, label, size, live }: { value: number; label: string; size?: 'lg'; live?: boolean }) {
   const pct = Math.max(0, Math.min(1, value))
   const full = pct >= 1
   const sparking = live && pct > 0 && !full
+  const was = useRef({ pct, live })
+  const [bursts, setBursts] = useState(0)
+  useEffect(() => {
+    if (full && was.current.live && was.current.pct < 1) setBursts((n) => n + 1)
+    was.current = { pct, live }
+  }, [pct, live, full])
   return (
     <div
-      className={`meter ${full ? 'meter-positive' : ''} ${size === 'lg' ? 'meter-lg' : ''} ${live ? 'meter-live' : ''}`}
+      className={`meter ${full ? 'meter-positive' : ''} ${size === 'lg' ? 'meter-lg' : ''} ${live ? 'meter-live' : ''} ${bursts ? 'meter-burst' : ''}`}
       role="progressbar"
       aria-label={label}
       aria-valuemin={0}
@@ -66,6 +82,13 @@ export function Meter({ value, label, size, live }: { value: number; label: stri
         <span className="meter-head" style={{ left: `${pct * 100}%` }} aria-hidden="true">
           {SPARKS.map(([dx, dy, d], i) => (
             <i key={i} style={{ '--dx': `${dx}px`, '--dy': `${dy}px`, animationDelay: `${0.9 + d}s` } as CSSProperties} />
+          ))}
+        </span>
+      )}
+      {bursts > 0 && (
+        <span key={bursts} className="meter-burst-at" aria-hidden="true">
+          {BURST.map(([dx, dy], i) => (
+            <i key={i} style={{ '--dx': `${dx}px`, '--dy': `${dy}px` } as CSSProperties} />
           ))}
         </span>
       )}

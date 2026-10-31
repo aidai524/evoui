@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from 'react'
 import { PageHead } from '../../components/Shell'
 import { Badge, Empty, ErrorCallout, Meter, Notice, Reading, SkeletonCard, Tween } from '../../components/ui'
 import { CONFIG, TAX } from '../../lib/config'
@@ -168,7 +168,7 @@ export function Launches({ onOpenCurve, onCreate }: { onOpenCurve: (t: TokenInfo
           </div>
           <div className={`featured-grid n${picks.length}`}>
             {picks.map((p, i) => (
-              <FeaturedCard key={p.token.token_account} pick={p} pattern={patterns[i]} data={dataFor(p.token)} onOpen={() => open(p.token)} />
+              <FeaturedCard key={p.token.token_account} order={i} pick={p} pattern={patterns[i]} data={dataFor(p.token)} onOpen={() => open(p.token)} />
             ))}
           </div>
         </section>
@@ -220,8 +220,8 @@ export function Launches({ onOpenCurve, onCreate }: { onOpenCurve: (t: TokenInfo
         <Empty title="Nothing matches">Clear the filter or search to see all {tokens.length} tokens.</Empty>
       ) : (
         <div className="token-grid">
-          {shown.map((t) => (
-            <TokenCard key={t.token_account} token={t} data={dataFor(t)} onOpen={() => open(t)} />
+          {shown.map((t, i) => (
+            <TokenCard key={t.token_account} order={i} token={t} data={dataFor(t)} onOpen={() => open(t)} />
           ))}
         </div>
       )}
@@ -239,11 +239,14 @@ export function Launches({ onOpenCurve, onCreate }: { onOpenCurve: (t: TokenInfo
 
 // ───────────────── cards
 
-function FeaturedCard({ pick, pattern, data, onOpen }: { pick: Pick; pattern: number; data: CardData; onOpen: () => void }) {
+/** Entrance stagger: each card a beat after the one before (capped so long lists don't wait). */
+const enter = (i: number) => ({ '--i': Math.min(i, 8) }) as CSSProperties
+
+function FeaturedCard({ order, pick, pattern, data, onOpen }: { order: number; pick: Pick; pattern: number; data: CardData; onOpen: () => void }) {
   const { token } = pick
   const s = data.curve ? curveStats(data.curve) : null
   return (
-    <button className="feature-card" onClick={onOpen} aria-label={`Open ${token.symbol}`}>
+    <button className="feature-card" style={enter(order)} onClick={onOpen} aria-label={`Open ${token.symbol}`}>
       <div className="feature-media">
         <TokenArt token={token} pattern={pattern} />
         <div className="feature-tags">
@@ -274,12 +277,12 @@ function FeaturedCard({ pick, pattern, data, onOpen }: { pick: Pick; pattern: nu
   )
 }
 
-function TokenCard({ token, data, onOpen }: { token: TokenInfo; data: CardData; onOpen: () => void }) {
+function TokenCard({ order, token, data, onOpen }: { order: number; token: TokenInfo; data: CardData; onOpen: () => void }) {
   const s = data.curve ? curveStats(data.curve) : null
   const plain = !token.curve_account
   const status = data.curve?.status
   return (
-    <button className={`token-card ${plain ? 'token-card--plain' : ''}`} onClick={onOpen} aria-label={`Open ${token.symbol}`}>
+    <button className={`token-card ${plain ? 'token-card--plain' : ''}`} style={enter(order)} onClick={onOpen} aria-label={`Open ${token.symbol}`}>
       <div className="token-card-head">
         <div className="row" style={{ gap: 12, minWidth: 0, flexWrap: 'nowrap' }}>
           <TokenIcon token={token} />
