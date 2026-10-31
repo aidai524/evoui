@@ -7,7 +7,7 @@ import { useAsync } from '../../lib/hooks'
 import type { CurveView, MarketStats, TokenInfo } from '../../lib/types'
 import { useWallet } from '../../wallet/WalletProvider'
 import { currentDecisions, curateApi } from '../curate/api'
-import { curveStats, TokenIcon } from './tokenView'
+import { curveStats, GRAD_STAGES, gradStage, TokenIcon } from './tokenView'
 import { artPattern, ART_PATTERNS, TokenArt } from './TokenArt'
 
 const PAGE = 12
@@ -341,15 +341,20 @@ function Progress({ token, curve }: { token: TokenInfo; curve: CurveView | null 
     )
   }
   const s = curveStats(curve)
+  const stage = gradStage(s.progress)
   return (
     <div className="progress-block">
       <div className="progress-head">
         <span className="progress-pct">
           <Tween value={s.progress * 100} format={(n) => `${Math.floor(n)}%`} />
         </span>
-        <span className="progress-label">{curve.status === 'SOLD_OUT' ? 'sold out · awaiting graduation' : 'to graduation'}</span>
+        {curve.status === 'SOLD_OUT' ? (
+          <span className="progress-label">sold out · awaiting graduation</span>
+        ) : (
+          <span className={`progress-label progress-label--${stage}`}>{GRAD_STAGES[stage]}</span>
+        )}
       </div>
-      <Meter value={s.progress} label={`${token.symbol} graduation progress`} live={curve.status === 'TRADING'} />
+      <Meter value={s.progress} label={`${token.symbol} graduation progress`} live={curve.status === 'TRADING'} ticks />
     </div>
   )
 }

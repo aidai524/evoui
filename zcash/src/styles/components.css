@@ -570,6 +570,18 @@ textarea.input {
   animation: meter-pulse 1.6s ease-in-out 0.9s infinite;
 }
 .meter-lg .meter-head::before { top: -9px; height: 18px; }
+
+/* Heat: a fuller live bar burns brighter, its head glows wider and pulses faster */
+.meter-live .meter-fill { filter: brightness(calc(0.68 + var(--heat, 0) * 0.5)) saturate(calc(0.7 + var(--heat, 0) * 0.45)); }
+.meter-live .meter-head::before {
+  box-shadow: 0 0 calc(4px + var(--heat, 0) * 10px) calc(var(--heat, 0) * 2px) var(--accent);
+  animation-duration: calc(2.2s - var(--heat, 0) * 1.2s);
+}
+.meter-hot .meter-head::before { left: -4px; width: 4px; background: var(--lime); }
+
+/* Quarter marks notched into the track */
+.meter-ticks { position: absolute; inset: 0; pointer-events: none; }
+.meter-ticks i { position: absolute; top: 0; bottom: 0; width: 2px; margin-left: -1px; background: var(--bg); opacity: 0.75; }
 .meter-head i {
   position: absolute;
   left: -2px;
@@ -880,6 +892,11 @@ textarea.input {
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
+.to-grad { margin: var(--s-3) 0 0; color: var(--ink-3); font-family: var(--font-mono); font-size: 12px; }
+.to-grad b { color: var(--ink); font-weight: 700; }
+.progress-label--early { color: var(--ink-3); }
+.progress-label--building { color: var(--ink-2); }
+.progress-label--final { color: var(--accent); }
 .plain-line,
 .graduated-line {
   padding: 10px 12px;

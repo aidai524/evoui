@@ -1,6 +1,6 @@
 import { Badge } from '../../components/ui'
 import { CONFIG, TAX } from '../../lib/config'
-import { spotPrice, curveParams } from '../../lib/curve'
+import { costOf, spotPrice, curveParams } from '../../lib/curve'
 import { bpsToPct, compact, fromAtoms } from '../../lib/format'
 import type { CurveStatus, CurveView, TokenInfo } from '../../lib/types'
 
@@ -14,6 +14,21 @@ export function curveStats(c: CurveView) {
   const mcap = price * totalUnits
   const progress = p.s === 0n ? 0 : Number((sold * 10000n) / p.s) / 10000
   return { price, mcap, sold, progress, totalUnits }
+}
+
+/** Where a trading curve stands on its way to graduation. */
+export type GradStage = 'early' | 'building' | 'final'
+export const GRAD_STAGES: Record<GradStage, string> = { early: 'Early', building: 'Building', final: 'Final stretch' }
+export function gradStage(progress: number): GradStage {
+  return progress < 0.25 ? 'early' : progress < 0.75 ? 'building' : 'final'
+}
+
+/** Payment atoms of buys still needed to sell out the curve (gross of transfer tax when the token has one). */
+export function toGraduate(c: CurveView, taxed: boolean): bigint {
+  const p = curveParams(c)
+  const sold = BigInt(c.units_sold)
+  const cost = sold >= p.s ? 0n : costOf(p, sold, p.s - sold)
+  return taxed ? (cost * 10000n + BigInt(10000 - TAX.totalBps) - 1n) / BigInt(10000 - TAX.totalBps) : cost
 }
 
 /** Display-only: per-unit curve prices are tiny, so show 4 significant digits. */

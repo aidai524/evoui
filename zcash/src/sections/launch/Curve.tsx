@@ -2,13 +2,13 @@ import { useState } from 'react'
 import { PageHead } from '../../components/Shell'
 import { DataCell, Empty, ErrorCallout, Field, Meter, Notice, Panel, Reading, Tween, TxNotice } from '../../components/ui'
 import { CONFIG, nearblocks, SELL_FEE_BPS, TAX } from '../../lib/config'
-import { bpsToPct, fromAtoms, groupInt, shortAccount, shortHex, toAtoms } from '../../lib/format'
+import { amountShort, bpsToPct, fromAtoms, groupInt, shortAccount, shortHex, toAtoms } from '../../lib/format'
 import { useAsync } from '../../lib/hooks'
 import type { CurveView, TokenInfo } from '../../lib/types'
 import { useTx } from '../../lib/useTx'
 import { useWallet } from '../../wallet/WalletProvider'
 import { MyRewards } from './MyRewards'
-import { curveStats, KindBadge, pay, sig, StatusBadge, TaxBadge, TokenIcon } from './tokenView'
+import { curveStats, GRAD_STAGES, gradStage, KindBadge, pay, sig, StatusBadge, TaxBadge, toGraduate, TokenIcon } from './tokenView'
 
 export function Curve({ token, onPick, onBrowse }: { token: TokenInfo | null; onPick: (t: TokenInfo) => void; onBrowse: () => void }) {
   if (!token) return <CurvePicker onPick={onPick} onBrowse={onBrowse} />
@@ -137,6 +137,9 @@ function CurveDetail({ token }: { token: TokenInfo }) {
 
 function CurveOverview({ token, c }: { token: TokenInfo; c: CurveView }) {
   const st = curveStats(c)
+  const trading = c.status === 'TRADING'
+  const stage = gradStage(st.progress)
+  const left = toGraduate(c, token.tax_enabled)
   return (
     <div className="stack">
       {token.tax_enabled && (
@@ -171,14 +174,20 @@ function CurveOverview({ token, c }: { token: TokenInfo; c: CurveView }) {
         <div className="row between" style={{ marginBottom: 8 }}>
           <span className="data-label">Graduation progress</span>
           <span className="tiny">
+            {trading && <span className={`progress-label progress-label--${stage}`}>{GRAD_STAGES[stage]} · </span>}
             <Tween value={st.progress * 100} format={(n) => `${n.toFixed(2)}%`} />
           </span>
         </div>
-        <Meter value={st.progress} size="lg" label="Graduation progress" live={c.status === 'TRADING'} />
+        <Meter value={st.progress} size="lg" label="Graduation progress" live={trading} ticks />
         <div className="meter-legend">
           <span>sell out s = {groupInt(c.s)} units to graduate and migrate to a pool</span>
           <span>reserve {groupInt(c.reserve_units)} → pool</span>
         </div>
+        {trading && (
+          <p className="to-grad" title={token.tax_enabled ? `Includes the ${bpsToPct(TAX.totalBps)} transfer tax taken from each buy` : 'Curve cost of the remaining units'}>
+            ≈ <b>{amountShort(left, CONFIG.payment.decimals)} {CONFIG.payment.symbol}</b> of buys to graduate
+          </p>
+        )}
       </div>
     </div>
   )
