@@ -17,11 +17,12 @@
 //   token    ft_balance_of({ account_id })   (claimed curve units + plain-token balances)
 //
 // Market data (created_at, holders, 24h volume / change) is not on chain: it comes from the optional
-// VITE_NOIR_STATS_INDEXER; without it the list hides those fields.
+// VITE_NOIR_STATS_INDEXER; without it the list hides those fields. Price history likewise comes from the
+// optional VITE_NOIR_HISTORY_INDEXER.
 
 import { JsonRpcProvider, teraToGas } from 'near-api-js'
 import { CONFIG, TAX } from '../lib/config'
-import type { CreateArgs, CreateResult, CurveView, LegacySale, MarketStats, Position, Rewards, RewardEvent, TokenInfo, TxResult } from '../lib/types'
+import type { CreateArgs, CreateResult, CurveView, LegacySale, MarketStats, Position, PriceBucket, Rewards, RewardEvent, TokenInfo, TxResult } from '../lib/types'
 import { ChainError, type Backend, type SignerCtx } from './backend'
 
 const GAS = teraToGas('300')
@@ -154,6 +155,13 @@ export class NearBackend implements Backend {
       }),
     )
     return out
+  }
+
+  async getPriceHistory(token: TokenInfo, bucketMs: number): Promise<PriceBucket[] | null> {
+    if (!CONFIG.historyIndexer) return null
+    const r = await fetch(`${CONFIG.historyIndexer}?token=${encodeURIComponent(token.token_account)}&bucket=${bucketMs}`)
+    if (!r.ok) throw new ChainError('INDEXER', `History indexer returned ${r.status}.`)
+    return (await r.json()) as PriceBucket[]
   }
 
   async createToken(signer: SignerCtx, args: CreateArgs, deposit: bigint): Promise<CreateResult> {

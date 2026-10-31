@@ -19,6 +19,8 @@ export const CONFIG = {
   rewardsIndexer: env.VITE_NOIR_REWARDS_INDEXER as string | undefined,
   /** Optional market-data index for the launches list (GET <url>?tokens=a,b → MarketStats & { token_account }[]). */
   statsIndexer: env.VITE_NOIR_STATS_INDEXER as string | undefined,
+  /** Optional curve price history (GET <url>?token=&bucket=<ms> → PriceBucket[]); the curve page hides the chart without it. */
+  historyIndexer: env.VITE_NOIR_HISTORY_INDEXER as string | undefined,
   /** VITE_CURATE_API=1 → Curate console talks to /api (proxied to :4123); otherwise in-memory demo data. */
   curateApi: env.VITE_CURATE_API === '1',
 } as const

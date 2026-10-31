@@ -1382,3 +1382,43 @@ details.disclosure > summary + * { margin-top: var(--s-3); }
 .hero-title .lime-mark {
   background: linear-gradient(transparent 58%, var(--mark) 58%);
 }
+
+/* ───────────────── Curve charts ───────────────── */
+.chart { min-width: 0; }
+.chart svg { display: block; overflow: visible; touch-action: pan-y; }
+.chart-readout {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2) var(--s-4);
+  margin-bottom: var(--s-2);
+  color: var(--ink-3);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+.chart-readout b { color: var(--ink); font-weight: 700; }
+.chart-axis { fill: var(--ink-3); font-family: var(--font-mono); font-size: 10px; font-variant-numeric: tabular-nums; }
+.chart-grid { stroke: var(--line); stroke-width: 1; }
+.chart-line { fill: none; stroke: var(--accent); stroke-width: 2; stroke-linejoin: round; }
+.chart-bar { fill: var(--line-strong); }
+.chart-bar.is-on { fill: var(--accent); }
+.chart-cursor { stroke: var(--ink-3); stroke-width: 1; stroke-dasharray: 2 3; }
+.chart-dot { fill: var(--bg); stroke: var(--accent-bright); stroke-width: 2; }
+
+/* Bonding curve: the sold area takes the stage colour (--bc) */
+.bc--early { --bc: var(--accent-deep); }
+.bc--building { --bc: var(--accent); }
+.bc--final { --bc: var(--hot); }
+.bc--done { --bc: var(--lime); }
+.bc-sold { fill: color-mix(in srgb, var(--bc) 32%, transparent); }
+.bc-hatch { stroke: var(--line); stroke-width: 1.5; }
+.bc-line { fill: none; stroke: var(--bc); stroke-width: 2; }
+.bc-reserve { fill: var(--ink-2); font-family: var(--font-mono); font-size: 11px; }
+.bc-now { fill: var(--bc); stroke: var(--bg); stroke-width: 2; }
+.bc-now-ring { fill: none; stroke: var(--bc); stroke-width: 1.5; transform-box: fill-box; transform-origin: center; animation: bc-ring 1.8s ease-out infinite; }
+.bc-now-line { stroke: var(--bc); stroke-width: 1; stroke-dasharray: 3 3; }
+.bc-now-label { fill: var(--ink); font-family: var(--font-mono); font-size: 11px; font-weight: 700; }
+@keyframes bc-ring {
+  from { opacity: 0.9; transform: scale(0.6); }
+  to { opacity: 0; transform: scale(1.8); }
+}

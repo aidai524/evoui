@@ -7,6 +7,7 @@ import { useAsync } from '../../lib/hooks'
 import type { CurveView, TokenInfo } from '../../lib/types'
 import { useTx } from '../../lib/useTx'
 import { useWallet } from '../../wallet/WalletProvider'
+import { CurveCharts } from './CurveCharts'
 import { MyRewards } from './MyRewards'
 import { curveStats, GRAD_STAGES, gradStage, KindBadge, pay, sig, StatusBadge, TaxBadge, toGraduate, TokenIcon } from './tokenView'
 
@@ -107,6 +108,8 @@ function CurveDetail({ token }: { token: TokenInfo }) {
         <div className="split">
           <div className="stack-lg">
             <CurveOverview token={token} c={c} />
+
+            <CurveCharts token={token} c={c} />
 
             <div className="hash-strip">
               <span className="data-label">id_commitment</span>

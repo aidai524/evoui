@@ -5,6 +5,7 @@ import type {
   CurveView,
   LegacySale,
   MarketStats,
+  PriceBucket,
   Position,
   Rewards,
   TokenInfo,
@@ -34,6 +35,8 @@ export interface Backend {
   getMarketStats(tokens: TokenInfo[]): Promise<Record<string, MarketStats>>
   /** Token atoms held by this identity: open curve units (id_commitment) + ft balance of the account. */
   getHoldings(accountId: string, idCommitment: string, tokens: TokenInfo[]): Promise<Record<string, string>>
+  /** Curve trading since creation in `bucketMs` buckets, oldest first; null when no history source is configured. */
+  getPriceHistory(token: TokenInfo, bucketMs: number): Promise<PriceBucket[] | null>
 
   // ── writes
   createToken(signer: SignerCtx, args: CreateArgs, deposit: bigint): Promise<CreateResult>

@@ -22,6 +22,14 @@ export interface TokenInfo {
 }
 
 /** Market data for list views. Every field is optional: null = not known for this backend / token. */
+/** One time bucket of curve trading: spot price at the bucket's close and payment atoms traded in it. */
+export interface PriceBucket {
+  /** ms epoch the bucket starts. */
+  t: number
+  price: string
+  volume: string
+}
+
 export interface MarketStats {
   /** ms epoch the token was created. */
   created_at: number | null

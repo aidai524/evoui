@@ -13,6 +13,7 @@ import type {
   LegacySale,
   MarketStats,
   Position,
+  PriceBucket,
   Rewards,
   RewardEvent,
   TokenInfo,
@@ -172,6 +173,29 @@ export class FakeBackend implements Backend {
         volume_24h: live ? volume.toString() : null,
         change_24h_bps: live && then > 0n ? Number(((nowPrice - then) * 10000n) / then) : null,
       }
+    }
+    return out
+  }
+
+  async getPriceHistory(info: TokenInfo, bucketMs: number): Promise<PriceBucket[] | null> {
+    await wait(250)
+    const t = this.tokens.find((x) => x.info.token_account === info.token_account)
+    if (!t?.curve) return []
+    const c = t.curve
+    const trades = [...t.trades].sort((a, b) => a.at - b.at)
+    const start = Math.floor(t.createdAt / bucketMs) * bucketMs
+    const end = Date.now()
+    const out: PriceBucket[] = []
+    let price = c.p0
+    let i = 0
+    for (let b = start; b <= end; b += bucketMs) {
+      let volume = 0n
+      while (i < trades.length && trades[i].at < b + bucketMs) {
+        price = trades[i].price
+        volume += trades[i].volume
+        i++
+      }
+      out.push({ t: b, price: price.toString(), volume: volume.toString() })
     }
     return out
   }
