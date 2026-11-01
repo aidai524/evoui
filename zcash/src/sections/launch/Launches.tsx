@@ -30,18 +30,18 @@ export function Launches({ onOpenCurve, onCreate }: { onOpenCurve: (t: TokenInfo
   const [q, setQ] = useState('')
   const [notice, setNotice] = useState<string | null>(null)
 
-  // Enumerate the factory page by page.
+  // Enumerate the whole factory (page by page) so search, filters, Featured and the tax count
+  // see every token; LOAD MORE only reveals more cards.
   const list = useAsync(async () => {
     const out: TokenInfo[] = []
-    for (let i = 0; i < pages; i++) {
+    for (let i = 0; ; i++) {
       const batch = await backend.getTokens(i * PAGE, PAGE)
       out.push(...batch)
-      if (batch.length < PAGE) return { tokens: out, more: false }
+      if (batch.length < PAGE) return out
     }
-    return { tokens: out, more: true }
-  }, [backend, pages, version])
+  }, [backend, version])
 
-  const tokens = list.data?.tokens
+  const tokens = list.data
   const taxCount = (tokens ?? []).filter((t) => t.tax_enabled).length
 
   // Curve views for every curve token, fetched in parallel; failures stay per-card.
@@ -127,6 +127,7 @@ export function Launches({ onOpenCurve, onCreate }: { onOpenCurve: (t: TokenInfo
       return !needle || t.symbol.toLowerCase().includes(needle) || t.name.toLowerCase().includes(needle)
     })
   }, [tokens, filter, q])
+  const visible = shown.slice(0, pages * PAGE)
 
   const open = (t: TokenInfo) =>
     t.curve_account
@@ -152,7 +153,7 @@ export function Launches({ onOpenCurve, onCreate }: { onOpenCurve: (t: TokenInfo
           <span>
             <span className="hl">HOLD → EARN {TAX.rewardSymbol.toUpperCase()}</span> — {taxCount} TAX-MODE {taxCount === 1 ? 'TOKEN' : 'TOKENS'} LIVE · {bpsToPct(TAX.holdersBps)} OF EVERY TRANSFER PAID TO HOLDERS
           </span>
-          <button className="btn btn-primary btn-sm" onClick={() => { setFilter('tax'); setNotice(null) }}>
+          <button className="btn btn-primary btn-sm" onClick={() => { setFilter('tax'); setPages(1); setNotice(null) }}>
             SHOW TAX TOKENS →
           </button>
         </div>
@@ -179,12 +180,12 @@ export function Launches({ onOpenCurve, onCreate }: { onOpenCurve: (t: TokenInfo
       <div className="toolbar">
         <div className="filter-chips" role="group" aria-label="Filter tokens">
           {(['all', 'curve', 'token', 'tax'] as Filter[]).map((f) => (
-            <button key={f} className="chip" aria-pressed={filter === f} onClick={() => { setFilter(f); setNotice(null) }}>
+            <button key={f} className="chip" aria-pressed={filter === f} onClick={() => { setFilter(f); setPages(1); setNotice(null) }}>
               {f === 'tax' ? 'tax · wZEC' : f}
             </button>
           ))}
         </div>
-        <input className="input grow" placeholder="Search symbol or name" value={q} onChange={(e) => { setQ(e.target.value); setNotice(null) }} aria-label="Search tokens" />
+        <input className="input grow" placeholder="Search symbol or name" value={q} onChange={(e) => { setQ(e.target.value); setPages(1); setNotice(null) }} aria-label="Search tokens" />
         {list.loading && tokens && <Reading />}
       </div>
 
@@ -220,16 +221,16 @@ export function Launches({ onOpenCurve, onCreate }: { onOpenCurve: (t: TokenInfo
         <Empty title="Nothing matches">Clear the filter or search to see all {tokens.length} tokens.</Empty>
       ) : (
         <div className="token-grid">
-          {shown.map((t, i) => (
+          {visible.map((t, i) => (
             <TokenCard key={t.token_account} order={i} token={t} data={dataFor(t)} onOpen={() => open(t)} />
           ))}
         </div>
       )}
 
-      {list.data?.more && (
+      {shown.length > visible.length && (
         <div className="row" style={{ marginTop: 24, justifyContent: 'center' }}>
-          <button className="btn btn-secondary" disabled={list.loading} onClick={() => setPages((p) => p + 1)}>
-            {list.loading ? 'READING…' : 'LOAD MORE'}
+          <button className="btn btn-secondary" onClick={() => setPages((p) => p + 1)}>
+            LOAD MORE · {shown.length - visible.length} LEFT
           </button>
         </div>
       )}

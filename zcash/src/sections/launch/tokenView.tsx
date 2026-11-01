@@ -61,7 +61,7 @@ export function StatusBadge({ status }: { status: CurveStatus }) {
 export function TokenIcon({ token }: { token: TokenInfo }) {
   return (
     <span className="token-icon" aria-hidden="true">
-      {token.icon && /^(https?:|data:image\/)/.test(token.icon) ? <img src={token.icon} alt="" /> : token.symbol.slice(0, 1)}
+      {token.icon && /^(https?:|data:image\/|\/(?!\/))/.test(token.icon) ? <img src={token.icon} alt="" /> : token.symbol.slice(0, 1)}
     </span>
   )
 }

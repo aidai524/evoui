@@ -37,7 +37,7 @@ export function CurveCharts({ token, c }: { token: TokenInfo; c: CurveView }) {
   const { backend, version } = useWallet()
   const hist = useAsync(() => backend.getPriceHistory(token, HOUR), [backend, token.token_account, version])
   const b = hist.data
-  const first = b?.find((x) => x.volume !== '0') ?? b?.[0]
+  const first = b?.find((x) => x.volume !== '0')
   const last = b?.[b.length - 1]
   const change = first && last && BigInt(first.price) > 0n ? Number(((BigInt(last.price) - BigInt(first.price)) * 10000n) / BigInt(first.price)) : null
 
@@ -49,7 +49,7 @@ export function CurveCharts({ token, c }: { token: TokenInfo; c: CurveView }) {
             <ErrorCallout error={hist.error} onRetry={hist.reload} />
           ) : !b ? (
             <div className="skeleton" style={{ height: 268 }} />
-          ) : b.length < 2 ? (
+          ) : b.length < 2 || b.every((x) => x.volume === '0') ? (
             <p className="tiny muted">No trades yet.</p>
           ) : (
             <PriceHistoryChart buckets={b} />

@@ -461,6 +461,11 @@ export class FakeBackend implements Backend {
     const feeMode: FeeMode = { SellFee: { bps: SELL_FEE_BPS } }
     // Demo tokens with cover art in public/covers/<symbol>.webp.
     const covers = new Set(['NEBULAE69M', 'KRILL', 'MOSSDAO', 'ORBITCAT', 'GLYPH'])
+    // Test tokens with icons in public/icons/<symbol>.webp.
+    const icons = new Set([
+      'EMBER', 'LANTERN', 'TIDE', 'FOXGLOVE', 'ANVIL', 'HALO', 'OWLNIGHT', 'COMET', 'BEACON', 'SUNDIAL',
+      'MAGMA', 'PRISM', 'OAKROOT', 'KOI', 'ZQ', 'NAUTILUSSPIRAL16', 'HIVE', 'USDTEST', 'ACORN', 'CROWN',
+    ])
 
     const now = Date.now()
     const mk = (o: {
@@ -496,7 +501,7 @@ export class FakeBackend implements Backend {
           curve_account: curveAccount,
           tax_enabled: !!o.tax,
           reward_asset: o.tax ? TAX.rewardAsset : null,
-          icon: null,
+          icon: icons.has(o.symbol) ? `${import.meta.env.BASE_URL}icons/${o.symbol.toLowerCase()}.webp` : null,
           cover: covers.has(o.symbol) ? `${import.meta.env.BASE_URL}covers/${o.symbol.toLowerCase()}.webp` : null,
           reference: null,
         },
@@ -602,6 +607,28 @@ export class FakeBackend implements Backend {
     mk({ symbol: 'KRILL', name: 'Krill Swarm', total: 420_000_000n, curve: { s: 336_000_000n, p0: 0.00000005, p1: 0.0000004, soldPct: 0.08 }, tax: true, ageHours: 18, holders: 23 })
     mk({ symbol: 'PLAINUSD', name: 'Plain Test Dollar', decimals: 6, total: 10_000_000n, ageHours: 290, holders: 9, mineFt: 2_500n })
     mk({ symbol: 'MOSSDAO', name: 'Moss DAO', total: 5_000_000n, curve: { s: 4_000_000n, p0: 0.00001, p1: 0.00008, soldPct: 0.31 }, ageHours: 146, holders: 57, dump: 0.03 })
+
+    // 20 test tokens covering every state on the page (see the icon doc).
+    mk({ symbol: 'EMBER', name: 'Ember Coin', total: 100_000_000n, curve: { s: 80_000_000n, p0: 0.0000003, p1: 0.0000024, soldPct: 0.03 }, tax: true, ageHours: 2, holders: 6 })
+    mk({ symbol: 'LANTERN', name: 'Lantern Fund', total: 250_000_000n, curve: { s: 200_000_000n, p0: 0.0000001, p1: 0.0000009, soldPct: 0.15 }, ageHours: 9, holders: 31 })
+    mk({ symbol: 'TIDE', name: 'Tide Pool', total: 50_000_000n, curve: { s: 40_000_000n, p0: 0.0000006, p1: 0.000005, soldPct: 0.22 }, tax: true, ageHours: 20, holders: 48 })
+    mk({ symbol: 'FOXGLOVE', name: 'Foxglove', total: 10_000_000n, curve: { s: 8_000_000n, p0: 0.000004, p1: 0.00003, soldPct: 0.34 }, ageHours: 40, holders: 66 })
+    mk({ symbol: 'ANVIL', name: 'Anvil Works', total: 21_000_000n, curve: { s: 16_800_000n, p0: 0.0000015, p1: 0.000012, soldPct: 0.47 }, tax: true, ageHours: 55, holders: 97 })
+    mk({ symbol: 'HALO', name: 'Halo', total: 777_000_000n, curve: { s: 621_600_000n, p0: 0.00000004, p1: 0.0000003, soldPct: 0.55 }, ageHours: 63, holders: 174, dump: 0.05 })
+    mk({ symbol: 'OWLNIGHT', name: 'Night Owl', total: 88_000_000n, curve: { s: 70_400_000n, p0: 0.0000003, p1: 0.0000026, soldPct: 0.68 }, tax: true, ageHours: 88, holders: 203 })
+    mk({ symbol: 'COMET', name: 'Comet Tail', total: 300_000_000n, curve: { s: 240_000_000n, p0: 0.00000008, p1: 0.0000007, soldPct: 0.76 }, ageHours: 47, holders: 259 })
+    mk({ symbol: 'BEACON', name: 'Beacon DAO', total: 12_000_000n, curve: { s: 9_600_000n, p0: 0.000002, p1: 0.000018, soldPct: 0.88 }, tax: true, ageHours: 120, holders: 318 })
+    mk({ symbol: 'SUNDIAL', name: 'Sundial', total: 24_000_000n, curve: { s: 19_200_000n, p0: 0.000001, p1: 0.000008, soldPct: 0.97 }, ageHours: 96, holders: 287 })
+    mk({ symbol: 'MAGMA', name: 'Magma', total: 66_600_000n, curve: { s: 53_280_000n, p0: 0.0000004, p1: 0.0000035, soldPct: 1 }, tax: true, ageHours: 70, holders: 402 })
+    mk({ symbol: 'PRISM', name: 'Prism', total: 7_000_000n, curve: { s: 5_600_000n, p0: 0.000005, p1: 0.00004, soldPct: 1 }, ageHours: 58, holders: 236 })
+    mk({ symbol: 'OAKROOT', name: 'Oak Root', total: 40_000_000n, curve: { s: 32_000_000n, p0: 0.0000007, p1: 0.000006, soldPct: 1 }, tax: true, status: 'GRADUATED', ageHours: 310, holders: 455 })
+    mk({ symbol: 'KOI', name: 'Koi', total: 888_000_000n, curve: { s: 710_400_000n, p0: 0.00000003, p1: 0.00000025, soldPct: 1 }, status: 'GRADUATED', ageHours: 400, holders: 731 })
+    mk({ symbol: 'ZQ', name: 'ZQ', total: 1_000_000n, curve: { s: 800_000n, p0: 0.00003, p1: 0.00025, soldPct: 0.4 }, tax: true, ageHours: 33, holders: 58 })
+    mk({ symbol: 'NAUTILUSSPIRAL16', name: 'Nautilus Spiral of the Deep Ocean Long Name Test', total: 160_000_000n, curve: { s: 128_000_000n, p0: 0.00000015, p1: 0.0000012, soldPct: 0.12 }, ageHours: 15, holders: 19 })
+    mk({ symbol: 'HIVE', name: 'Hive Collective', total: 60_000_000n, curve: { s: 48_000_000n, p0: 0.0000005, p1: 0.000004, soldPct: 0 }, tax: true, ageHours: 10 / 60, holders: 0 })
+    mk({ symbol: 'USDTEST', name: 'Test Stable', decimals: 6, total: 10_000_000n, ageHours: 500, holders: 14 })
+    mk({ symbol: 'ACORN', name: 'Acorn', decimals: 18, total: 1_000_000_000_000n, ageHours: 260, holders: 7 })
+    mk({ symbol: 'CROWN', name: 'Crown Reserve', total: 100n, ageHours: 180, holders: 3 })
 
     // Past bot runs for the demo identity on tax tokens.
     for (const sym of ['NEBULAE69M', 'GLYPH']) {
